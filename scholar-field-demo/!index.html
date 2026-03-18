@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InSight — Scholar & Field Mode</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --pu:#7c3aed;--pul:#a78bfa;--cy:#06b6d4;--gr:#22c55e;
+  --am:#f59e0b;--re:#ef4444;--em:#10b981;--or:#f97316;
+  --bg:#06060f;--b1:rgba(255,255,255,0.08);--s1:rgba(255,255,255,0.04);
+}
+body{background:var(--bg);font-family:'Inter',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* TOPBAR */
+.topbar{background:rgba(0,0,0,0.75);border-bottom:1px solid var(--b1);padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.logo{font-size:14px;font-weight:800;background:linear-gradient(135deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.mode-tabs{display:flex;gap:4px;margin-left:8px;}
+.mtab{background:rgba(255,255,255,0.04);border:1px solid var(--b1);color:#555;border-radius:5px;padding:4px 10px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .2s;font-weight:600;letter-spacing:.5px;}
+.mtab.on{color:#fff;}
+.mtab.scholar.on{background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.35);color:#10b981;}
+.mtab.field.on{background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.35);color:var(--or);}
+.scenario-tabs{display:flex;gap:4px;margin-left:8px;}
+.stab{background:rgba(255,255,255,0.03);border:1px solid var(--b1);color:#444;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .2s;}
+.stab.on{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:#aaa;}
+.topbar-right{margin-left:auto;display:flex;gap:6px;align-items:center;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--gr);box-shadow:0 0 5px var(--gr);animation:pulse 2s infinite;}
+.live-lbl{font-size:9px;color:#444;letter-spacing:1px;text-transform:uppercase;}
+
+/* DUAL LENS */
+.lenses{flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;}
+.lens{position:relative;overflow:hidden;}
+.lens-lbl{position:absolute;top:0;left:0;right:0;text-align:center;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.12);padding:4px;z-index:10;border-bottom:1px solid rgba(255,255,255,0.04);}
+.divider{position:absolute;top:0;bottom:0;left:50%;width:1px;background:rgba(255,255,255,0.06);z-index:20;}
+
+/* world */
+.world{position:absolute;inset:0;}
+.overlay{position:absolute;inset:0;pointer-events:none;}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 82% 78% at 50% 50%,transparent 45%,rgba(0,3,12,0.75) 100%);}
+.scanline{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(100,140,255,0.08),transparent);animation:scan 9s linear infinite;}
+.corner{position:absolute;width:11px;height:11px;border-style:solid;}
+.corner.tl{top:8px;left:8px;border-width:1px 0 0 1px;}
+.corner.tr{top:8px;right:8px;border-width:1px 1px 0 0;}
+.corner.bl{bottom:8px;left:8px;border-width:0 0 1px 1px;}
+.corner.br{bottom:8px;right:8px;border-width:0 1px 1px 0;}
+.corner.scholar{border-color:rgba(16,185,129,0.35);}
+.corner.field{border-color:rgba(249,115,22,0.35);}
+
+/* status bar */
+.hud-status{position:absolute;top:18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:3px 10px;display:flex;align-items:center;gap:8px;white-space:nowrap;backdrop-filter:blur(8px);}
+.si{display:flex;align-items:center;gap:3px;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+.sd{width:4px;height:4px;border-radius:50%;}
+
+/* ===== SCHOLAR BACKGROUNDS ===== */
+.scholar-bg{background:linear-gradient(160deg,#0a120e,#060d0a);}
+.field-bg{background:linear-gradient(160deg,#0f0a06,#0a0806);}
+
+/* document text area */
+.doc-area{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;max-height:65%;}
+.doc-label{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(16,185,129,0.4);margin-bottom:8px;text-align:center;}
+.doc-text{font-size:clamp(9px,1.3vw,12px);color:rgba(255,255,255,0.5);line-height:2;text-align:left;}
+.doc-text .gaze{background:rgba(16,185,129,0.15);border-bottom:1.5px solid rgba(16,185,129,0.5);color:rgba(255,255,255,0.85);padding:0 2px;border-radius:2px;transition:all .3s;}
+.doc-text .clipped{background:rgba(245,158,11,0.15);border-bottom:1.5px solid var(--am);color:rgba(255,230,150,0.9);padding:0 2px;border-radius:2px;}
+.doc-text .idea-link{background:rgba(167,139,250,0.12);border-bottom:1.5px solid rgba(167,139,250,0.4);color:rgba(200,180,255,0.85);padding:0 2px;border-radius:2px;cursor:pointer;}
+
+/* dwell ring */
+.dwell-ring{position:absolute;pointer-events:none;transition:opacity .3s;}
+.dwell-ring svg{transform:rotate(-90deg);}
+
+/* write mode */
+.write-area{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;}
+.write-label{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(167,139,250,0.4);margin-bottom:8px;}
+.write-text{font-size:clamp(9px,1.3vw,12px);color:rgba(255,255,255,0.7);line-height:2;}
+.write-cursor{display:inline-block;width:2px;height:1.1em;background:#a78bfa;vertical-align:text-bottom;animation:blink-cur .8s step-end infinite;margin-left:1px;}
+.gap-marker{background:rgba(239,68,68,0.12);border-bottom:1.5px dashed rgba(239,68,68,0.4);color:rgba(255,180,180,0.8);padding:0 2px;border-radius:2px;}
+
+/* field street view */
+.street-bg{position:absolute;inset:0;background:linear-gradient(180deg,#0a0e14 0%,#080c10 50%,#060809 100%);}
+.street{position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(to top,rgba(20,20,30,0.9),transparent);}
+.building{position:absolute;bottom:30%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);}
+.ar-box{position:absolute;border:1px solid;border-radius:2px;display:flex;align-items:flex-start;justify-content:flex-start;padding:3px 5px;}
+.ar-label{font-size:8px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
+
+/* right panels */
+.right-panel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;display:flex;flex-direction:column;gap:5px;max-height:80%;}
+.rpanel-lbl{font-size:7px;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:3px;}
+
+/* scholar right cards */
+.s-card{background:rgba(0,0,0,0.5);border-radius:8px;padding:9px 11px;backdrop-filter:blur(10px);transition:all .4s;}
+.s-card.scholar-c{border:1px solid rgba(16,185,129,0.2);}
+.s-card.idea-c{border:1px solid rgba(167,139,250,0.2);}
+.s-card.cite-c{border:1px solid rgba(245,158,11,0.25);}
+.s-card.source-c{border:1px solid rgba(6,182,212,0.2);}
+.sc-tag{font-size:7px;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+.sc-text{font-size:clamp(8px,1.1vw,10px);color:rgba(200,220,200,0.78);line-height:1.6;}
+.sc-cite{font-size:clamp(7px,1vw,9px);color:rgba(245,200,100,0.7);line-height:1.5;font-style:italic;margin-top:3px;}
+.sc-action{font-size:8px;color:rgba(255,255,255,0.3);margin-top:5px;display:flex;gap:8px;}
+.sc-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border-radius:4px;padding:2px 7px;font-size:8px;cursor:pointer;font-family:inherit;}
+.sc-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+
+/* field right cards */
+.f-card{background:rgba(0,0,0,0.55);border-radius:8px;padding:9px 11px;backdrop-filter:blur(10px);}
+.f-card.vehicle-c{border:1px solid rgba(249,115,22,0.25);}
+.f-card.damage-c{border:1px solid rgba(239,68,68,0.25);}
+.f-card.style-c{border:1px solid rgba(167,139,250,0.25);}
+.f-card.kc-c{border:1px solid rgba(6,182,212,0.25);}
+.fc-tag{font-size:7px;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.f-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:clamp(8px,1vw,10px);}
+.f-row:last-child{border-bottom:none;}
+.f-key{color:#5a6280;}
+.f-val{color:rgba(220,230,255,0.85);font-weight:500;text-align:right;}
+.flag{display:inline-flex;align-items:center;gap:3px;font-size:8px;border-radius:3px;padding:1px 5px;}
+.flag-ok{background:rgba(34,197,94,0.1);color:var(--gr);border:1px solid rgba(34,197,94,0.2);}
+.flag-warn{background:rgba(245,158,11,0.1);color:var(--am);border:1px solid rgba(245,158,11,0.2);}
+.flag-bad{background:rgba(239,68,68,0.1);color:var(--re);border:1px solid rgba(239,68,68,0.2);}
+.flag-info{background:rgba(6,182,212,0.1);color:var(--cy);border:1px solid rgba(6,182,212,0.2);}
+
+/* clip confirm */
+.clip-confirm{position:absolute;bottom:12%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);border:1px solid rgba(245,158,11,0.35);border-radius:8px;padding:8px 12px;backdrop-filter:blur(10px);transition:opacity .4s,transform .4s;white-space:nowrap;}
+.clip-confirm.hide{opacity:0;transform:translateX(-50%) translateY(6px);}
+.clip-tag{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(245,158,11,0.7);margin-bottom:3px;}
+.clip-text{font-size:10px;color:rgba(245,200,100,0.85);}
+
+/* queue dots */
+.qdots{position:absolute;bottom:6%;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;}
+.qdot{width:6px;height:6px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);transition:all .4s;}
+.qdot.active{background:rgba(16,185,129,0.5);border-color:rgba(16,185,129,0.6);}
+.qdot.field-active{background:rgba(249,115,22,0.5);border-color:rgba(249,115,22,0.6);}
+.qdot.done{transform:scale(0.6);opacity:0.3;}
+
+/* CONTROLS */
+.controls{border-top:1px solid var(--b1);padding:7px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:rgba(0,0,0,0.5);flex-shrink:0;}
+.ctrl{background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:rgba(255,255,255,0.55);border-radius:5px;padding:4px 10px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap;}
+.ctrl:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.ctrl.go{font-weight:600;}
+.ctrl.scholar-go{background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.3);color:#10b981;}
+.ctrl.field-go{background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.3);color:var(--or);}
+.ctrl.red{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);color:var(--re);}
+.remote-sim{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.02);border:1px solid var(--b1);border-radius:5px;padding:3px 9px;}
+.rlbl{font-size:8px;color:#333;letter-spacing:1px;}
+.rbtn{background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:#666;border-radius:3px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:inherit;}
+.rbtn:hover{color:#fff;background:rgba(255,255,255,0.1);}
+.divdr{width:1px;height:14px;background:rgba(255,255,255,0.08);}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes scan{0%{top:0;}100%{top:101%;}}
+@keyframes blink-cur{0%,100%{opacity:1;}50%{opacity:0;}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+@keyframes typewriter{from{width:0;}to{width:100%;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">InSight</div>
+  <div class="mode-tabs">
+    <button class="mtab scholar on" id="btn-scholar" onclick="setMainMode('scholar')">📚 Scholar</button>
+    <button class="mtab field" id="btn-field" onclick="setMainMode('field')">🔧 Field</button>
+  </div>
+  <div class="scenario-tabs" id="scenario-tabs"></div>
+  <div class="topbar-right">
+    <div class="live-dot"></div>
+    <div class="live-lbl">Live</div>
+  </div>
+</div>
+
+<div class="lenses">
+  <!-- LEFT LENS -->
+  <div class="lens" id="left-lens">
+    <div class="world" id="left-world"></div>
+    <div class="overlay">
+      <div class="vignette"></div>
+      <div class="scanline"></div>
+      <div class="corner tl scholar" id="corner-tl"></div>
+      <div class="corner tr scholar" id="corner-tr"></div>
+      <div class="corner bl scholar" id="corner-bl"></div>
+      <div class="corner br scholar" id="corner-br"></div>
+    </div>
+    <div class="lens-lbl">left lens — document / field view</div>
+    <div class="hud-status" id="left-status">
+      <div class="si"><div class="sd" style="background:var(--gr);box-shadow:0 0 5px var(--gr);animation:pulse 2s infinite"></div>ACTIVE</div>
+      <div class="si" id="left-mode-lbl"><div class="sd" style="background:#10b981"></div>SCHOLAR</div>
+    </div>
+    <div id="left-content"></div>
+    <div class="clip-confirm hide" id="clip-confirm">
+      <div class="clip-tag">✂ Quote Clipped · Citation Built</div>
+      <div class="clip-text" id="clip-text"></div>
+    </div>
+    <div class="qdots" id="left-qdots"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- RIGHT LENS -->
+  <div class="lens" id="right-lens">
+    <div class="world" id="right-world"></div>
+    <div class="overlay">
+      <div class="vignette"></div>
+      <div class="scanline" style="animation-delay:-4s"></div>
+      <div class="corner tl scholar" id="rcorner-tl"></div>
+      <div class="corner tr scholar" id="rcorner-tr"></div>
+      <div class="corner bl scholar" id="rcorner-bl"></div>
+      <div class="corner br scholar" id="rcorner-br"></div>
+    </div>
+    <div class="lens-lbl">right lens — AI intelligence panel</div>
+    <div class="hud-status" id="right-status">
+      <div class="si"><div class="sd" style="background:var(--cy);box-shadow:0 0 5px var(--cy);animation:pulse 2s infinite"></div>AI</div>
+      <div class="si" id="right-mode-lbl"><div class="sd" style="background:#10b981"></div>SCHOLAR ASSIST</div>
+    </div>
+    <div id="right-content"></div>
+    <div class="qdots" id="right-qdots"></div>
+  </div>
+</div>
+
+<div class="controls" id="controls"></div>
+
+<script>
+let mainMode = 'scholar';
+let scenario = 0;
+let clipTimeout = null;
+
+const SCHOLAR_SCENARIOS = [
+  { label: '📄 Archival Scan' },
+  { label: '✂ Quote Clip' },
+  { label: '🔗 Idea Connect' },
+  { label: '✍ Write First' }
+];
+
+const FIELD_SCENARIOS = [
+  { label: '🏍 Vehicle Scan' },
+  { label: '🛡 Damage Flag' },
+  { label: '👗 Style Assist' },
+  { label: '🏙 KC Field Intel' }
+];
+
+function setMainMode(m) {
+  mainMode = m;
+  scenario = 0;
+  document.getElementById('btn-scholar').classList.toggle('on', m === 'scholar');
+  document.getElementById('btn-field').classList.toggle('on', m === 'field');
+  const corners = ['corner-tl','corner-tr','corner-bl','corner-br','rcorner-tl','rcorner-tr','rcorner-bl','rcorner-br'];
+  corners.forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('scholar','field');
+    el.classList.add(m);
+  });
+  renderScenarioTabs();
+  renderScene();
+}
+
+function setScenario(i) {
+  scenario = i;
+  renderScenarioTabs();
+  renderScene();
+}
+
+function renderScenarioTabs() {
+  const tabs = document.getElementById('scenario-tabs');
+  tabs.innerHTML = '';
+  const list = mainMode === 'scholar' ? SCHOLAR_SCENARIOS : FIELD_SCENARIOS;
+  list.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.className = 'stab' + (i === scenario ? ' on' : '');
+    b.textContent = s.label;
+    b.onclick = () => setScenario(i);
+    tabs.appendChild(b);
+  });
+}
+
+function renderScene() {
+  if (mainMode === 'scholar') renderScholar();
+  else renderField();
+  renderControls();
+}
+
+// ===== SCHOLAR SCENES =====
+function renderScholar() {
+  const lw = document.getElementById('left-world');
+  const lc = document.getElementById('left-content');
+  const rw = document.getElementById('right-world');
+  const rc = document.getElementById('right-content');
+  lw.className = 'world scholar-bg';
+  rw.className = 'world scholar-bg';
+  document.getElementById('left-mode-lbl').innerHTML = `<div class="sd" style="background:#10b981"></div>SCHOLAR`;
+  document.getElementById('right-mode-lbl').innerHTML = `<div class="sd" style="background:#10b981"></div>SCHOLAR ASSIST`;
+
+  if (scenario === 0) scholarArchival(lc, rc);
+  else if (scenario === 1) scholarClip(lc, rc);
+  else if (scenario === 2) scholarIdea(lc, rc);
+  else if (scenario === 3) scholarWrite(lc, rc);
+}
+
+function scholarArchival(lc, rc) {
+  lc.innerHTML = `
+    <div class="doc-area">
+      <div class="doc-label">📄 Archival Document · 1923 Federal Reserve Bulletin</div>
+      <div class="doc-text">
+        The Board of Governors convened on March 14th to address the matter of discount rates across member banks. Testimony presented by Acting Chairman Walsh indicated that <span class="gaze" id="gaze-arch">the expansion of credit facilities to non-member institutions had created systemic imbalances inconsistent with the Act's original framers' intent</span>, a position later contested by several regional bank presidents who argued that the rural credit crisis demanded pragmatic deviation from strict constructionist readings of Section 13.
+      </div>
+    </div>`;
+  rc.innerHTML = `
+    <div class="right-panel">
+      <div class="rpanel-lbl" style="color:rgba(16,185,129,0.5)">— archival intelligence —</div>
+      <div class="s-card scholar-c">
+        <div class="sc-tag" style="color:#10b981"><span style="width:4px;height:4px;background:#10b981;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>Document Context</div>
+        <div class="sc-text">1923 Federal Reserve Bulletin — primary source. Period: post-WWI credit contraction. "Section 13" refers to the Federal Reserve Act's commercial paper provisions, amended 1916.</div>
+      </div>
+      <div class="s-card idea-c">
+        <div class="sc-tag" style="color:#a78bfa">🔗 Idea Connection</div>
+        <div class="sc-text">This debate mirrors your Chapter 2 draft on the 2008 Fed intervention — "strict constructionist vs. pragmatic" framing appears in both. Consider drawing the parallel explicitly.</div>
+      </div>
+      <div class="s-card source-c">
+        <div class="sc-tag" style="color:#06b6d4">🔍 Related Source Found</div>
+        <div class="sc-text">Meltzer, A. (2003) "A History of the Federal Reserve" — covers this exact 1923 dispute. 97% relevance. Available via JSTOR.</div>
+        <div class="sc-cite">Meltzer, Allan H. A History of the Federal Reserve, Vol. 1. Chicago: U of Chicago Press, 2003. pp. 142–148.</div>
+      </div>
+    </div>`;
+  renderQDots('left-qdots', 3, 0, 'scholar');
+  renderQDots('right-qdots', 0, 0, 'scholar');
+}
+
+function scholarClip(lc, rc) {
+  lc.innerHTML = `
+    <div class="doc-area">
+      <div class="doc-label">📚 Reading · Rousseau — The Social Contract (1762)</div>
+      <div class="doc-text">
+        The problem is to find a form of association which will defend and protect with the whole common force the person and goods of each associate, and in which each, while uniting himself with all, <span class="gaze" id="gaze-clip">may still obey himself alone, and remain as free as before</span>. This is the fundamental problem of which the Social Contract provides the solution. Each of us puts his person and all his power in common under the supreme direction of the general will, and, in our corporate capacity, we receive each member as an indivisible part of the whole.
+      </div>
+    </div>`;
+  rc.innerHTML = `
+    <div class="right-panel">
+      <div class="rpanel-lbl" style="color:rgba(16,185,129,0.5)">— clip & cite panel —</div>
+      <div class="s-card cite-c">
+        <div class="sc-tag" style="color:var(--am)">✂ Quote Ready to Clip</div>
+        <div class="sc-text">"may still obey himself alone, and remain as free as before"</div>
+        <div class="sc-cite">Rousseau, Jean-Jacques. The Social Contract. Trans. G.D.H. Cole. London: Dent, 1973. Book I, Ch. 6, p. 14.</div>
+        <div class="sc-action">
+          <button class="sc-btn" onclick="doClip('Rousseau — Social Contract, Bk.I Ch.6')">Dwell / Clip ✂</button>
+          <button class="sc-btn">Skip</button>
+        </div>
+      </div>
+      <div class="s-card idea-c">
+        <div class="sc-tag" style="color:#a78bfa">🔗 Idea Connection</div>
+        <div class="sc-text">This tension — collective union vs. individual freedom — directly supports your thesis paragraph on democratic legitimacy. Consider placing this quote at the opening of §3.</div>
+      </div>
+      <div class="s-card source-c">
+        <div class="sc-tag" style="color:#06b6d4">📋 Citation Formats Ready</div>
+        <div class="sc-text">MLA · APA · Chicago · Bluebook — all auto-generated. Synced to your citation library.</div>
+      </div>
+    </div>`;
+  renderQDots('left-qdots', 4, 1, 'scholar');
+  renderQDots('right-qdots', 0, 0, 'scholar');
+}
+
+function scholarIdea(lc, rc) {
+  lc.innerHTML = `
+    <div class="doc-area">
+      <div class="doc-label">📖 Reading · Locke — Second Treatise of Government (1689)</div>
+      <div class="doc-text">
+        The state of nature has a law of nature to govern it, which obliges every one: and reason, which is that law, teaches all mankind, who will but consult it, that being all equal and independent, <span class="idea-link" id="idea-span">no one ought to harm another in his life, health, liberty, or possessions</span>. For men being all the workmanship of one omnipotent and infinitely wise maker — all the servants of one sovereign master — are his property.
+      </div>
+    </div>`;
+  rc.innerHTML = `
+    <div class="right-panel">
+      <div class="rpanel-lbl" style="color:rgba(16,185,129,0.5)">— idea intelligence —</div>
+      <div class="s-card idea-c">
+        <div class="sc-tag" style="color:#a78bfa">🔗 Conflict Detected</div>
+        <div class="sc-text">Locke's individual rights position directly contradicts Rousseau's "general will" argument in your §2 — you cite both without addressing the tension. This needs a bridge or acknowledgment.</div>
+      </div>
+      <div class="s-card scholar-c">
+        <div class="sc-tag" style="color:#10b981">💡 Synthesis Suggestion</div>
+        <div class="sc-text">Berlin's "Two Concepts of Liberty" (1958) explicitly bridges Locke and Rousseau. Adding it as a secondary source could resolve the apparent contradiction in your argument.</div>
+        <div class="sc-cite">Berlin, Isaiah. "Two Concepts of Liberty." Four Essays on Liberty. Oxford: OUP, 1969. pp. 118–172.</div>
+      </div>
+      <div class="s-card source-c">
+        <div class="sc-tag" style="color:#06b6d4">📊 Argument Map</div>
+        <div class="sc-text">Your paper currently has 3 unsupported claims, 2 source conflicts, and 1 missing counterargument. Right eye queue shows each — dwell to address.</div>
+      </div>
+    </div>`;
+  renderQDots('left-qdots', 3, 0, 'scholar');
+  renderQDots('right-qdots', 0, 0, 'scholar');
+}
+
+function scholarWrite(lc, rc) {
+  lc.innerHTML = `
+    <div class="write-area">
+      <div class="write-label">✍ Writing Mode · Draft — §4 Economic Implications</div>
+      <div class="write-text">
+        The expansion of AI-driven market analysis tools represents a fundamental shift in how small businesses access competitive intelligence. Historically, this type of <span class="gap-marker">granular demographic and sentiment data</span> was available only to enterprises with dedicated research departments. The democratization of these tools suggests that <span class="gap-marker">entrepreneurial opportunity recognition may increasingly become a data-driven discipline</span> rather than one relying primarily on intuition and local knowledge.<span class="write-cursor"></span>
+      </div>
+    </div>`;
+  rc.innerHTML = `
+    <div class="right-panel">
+      <div class="rpanel-lbl" style="color:rgba(16,185,129,0.5)">— write first · source later —</div>
+      <div class="s-card source-c">
+        <div class="sc-tag" style="color:#06b6d4">🔍 Gap 1 — Source Needed</div>
+        <div class="sc-text">"granular demographic and sentiment data" — unsupported claim detected.</div>
+        <div class="sc-cite">Suggested: Brynjolfsson & McAfee (2014) "The Second Machine Age" — Ch. 8 covers data democratization. MIT Press. 94% match.</div>
+      </div>
+      <div class="s-card source-c">
+        <div class="sc-tag" style="color:#06b6d4">🔍 Gap 2 — Source Needed</div>
+        <div class="sc-text">"entrepreneurial opportunity recognition" — key term in your field with documented literature.</div>
+        <div class="sc-cite">Suggested: Shane & Venkataraman (2000) "The Promise of Entrepreneurship" — Academy of Management Review. 25(1). 91% match.</div>
+      </div>
+      <div class="s-card idea-c">
+        <div class="sc-tag" style="color:#a78bfa">💡 Strengthen Argument</div>
+        <div class="sc-text">SBA data shows 82% of small businesses make location and market decisions based on owner intuition alone. That statistic would powerfully ground your claim about the status quo.</div>
+      </div>
+    </div>`;
+  renderQDots('left-qdots', 2, 0, 'scholar');
+  renderQDots('right-qdots', 0, 0, 'scholar');
+}
+
+// ===== FIELD SCENES =====
+function renderField() {
+  const lw = document.getElementById('left-world');
+  const lc = document.getElementById('left-content');
+  const rw = document.getElementById('right-world');
+  const rc = document.getElementById('right-content');
+  lw.className = 'world field-bg';
+  rw.className = 'world field-bg';
+  document.getElementById('left-mode-lbl').innerHTML = `<div class="sd" style="background:var(--or)"></div>FIELD`;
+  document.getElementById('right-mode-lbl').innerHTML = `<div class="sd" style="background:var(--or)"></div>FIELD INTEL`;
+
+  if (scenario === 0) fieldVehicle(lc, rc);
+  else if (scenario === 1) fieldDamage(lc, rc);
+  else if (scenario === 2) fieldStyle(lc, rc);
+  else if (scenario === 3) fieldKC(lc, rc);
+}
+
+function fieldVehicle(lc, rc) {
+  lc.innerHTML = `
+    <div style="position:absolute;inset:0;">
+      <div class="street-bg"></div>
+      <div class="building" style="left:10%;width:18%;height:45%;bottom:28%"></div>
+      <div class="building" style="left:72%;width:22%;height:52%;bottom:28%"></div>
+      <div class="ar-box" style="left:22%;top:22%;width:52%;height:42%;border-color:rgba(249,115,22,0.6);background:rgba(249,115,22,0.04)">
+        <div class="ar-label" style="color:var(--or)">VEHICLE DETECTED</div>
+      </div>
+      <div style="position:absolute;left:24%;top:26%;font-size:clamp(8px,1.2vw,11px);color:rgba(249,115,22,0.8);font-weight:600;letter-spacing:.5px;">2019 Harley-Davidson Road Glide</div>
+      <div style="position:absolute;left:24%;top:34%;font-size:clamp(7px,1vw,9px);color:rgba(255,255,255,0.4);">VIN confirmed · Scanning…</div>
+      <div class="street"></div>
+    </div>`;
+  rc.innerHTML = `
+    <div class="right-panel">
+      <div class="rpanel-lbl" style="color:rgba(249,115,22,0.5)">— vehicle intelligence —</div>
+      <div class="f-card vehicle-c">
+        <div class="fc-tag" style="color:var(--or)"><span style="width:4px;height:4px;background:var(--or);border-radius:50%;display:inline-block"></span>2019 H-D Road Glide Special</div>
+        <div class="f-row"><span class="f-key">Market value</span><span class="f-val">$14,200 – $16,800</span></div>
+        <div class="f-row"><span class="f-key">Trade-in range</span><span class="f-val">$11,400 – $13,200</span></div>
+        <div class="f-row"><span class="f-key">Avg mileage (yr 5)</span><span class="f-val"><span class="flag flag-ok">✓ Below avg</span></span></div>
+        <div class="f-row"><span class="f-key">Open recalls</span><span class="f-val"><span class="flag flag-warn">⚠ 1 open</span></span></div>
+        <div class="f-row"><span class="f-key">Known issue</span><span class="f-val"><span class="flag flag-warn">⚠ Throttle body</span></span></div>
+        <div class="f-row"><span class="f-key">Last title</span><span class="f-val"><span class="flag flag-ok">✓ Clean</span></span></div>
+      </div>
+      <div class="f-card vehicle-c">
+        <div class="fc-tag" style="color:var(--am)">💬 Suggested Talking Points</div>
+        <div style="font-size:clamp(8px,1vw,10px);color:rgba(220,200,150,0.75);line-height:1.65;">Open recall is minor — LED headlamp bracket. Throttle body issue resolved under warranty pre-2020. Use mileage as leverage for trade-in negotiation floor.</div>
+      </div>
+    </div>`;
+  renderQDots('left-qdots', 3, 0, 'field');
+  renderQDots('right-qdots', 0, 0, 'field');
+}
+
+function fieldDamage(lc, rc) {
+  lc.innerHTML = `
+    <div style="position:absolute;inset:0;">
+      <div class="street-bg"></div>
+      <div class="building" style="left:15%;width:65%;height:55%;bottom:28%"></div>
+      <div class="ar-box" style="left:18%;top:24%;width:28%;height:18%;border-color:rgba(239,68,68,0.7);background:rgba(239,68,68,0.06)">
+        <div class="ar-label" style="color:var(--re);font-size:7px">DAMAGE · HIGH</div>
+      </div>
+      <div class="ar-box" style="left:52%;top:30%;width:22%;height:14%;border-color:rgba(245,158,11,0.6);background:rgba(245,158,11,0.05)">
+        <div class="ar-label" style="color:var(--am);font-size:7px">DAMAGE · MOD</div>
+      </div>
+      <div class="ar-box" style="left:25%;top:48%;width:18%;height:12%;border-color:rgba(6,182,212,0.5);background:rgba(6,182,212,0.04)">
+        <div class="ar-label" style="color:var(--cy);font-size:7px">INSPECT</div>
+      </div>
+      <div class="street"></div>
+    </div>`;
+  rc.innerHTML = `
+    <div class="right-panel">
+      <div class="rpanel-lbl" style="color:rgba(239,68,68,0.5)">— damage assessment —</div>
+      <div class="f-card damage-c">
+        <div class="fc-tag" style="color:var(--re)"><span style="width:4px;height:4px;background:var(--re);border-radius:50%;display:inline-block"></span>Front Panel — High Severity</div>
+        <div class="f-row"><span class="f-key">Damage type</span><span class="f-val">Impact + crumple</span></div>
+        <div class="f-row"><span class="f-key">Est. repair cost</span><span class="f-val"><span class="flag flag-bad">$4,200 – $6,800</span></span></div>
+        <div class="f-row"><span class="f-key">Structural risk</span><span class="f-val"><span class="flag flag-bad">⚠ Inspect frame</span></span></div>
+      </div>
+      <div class="f-card damage-c">
+        <div class="fc-tag" style="color:var(--am)"><span style="width:4px;height:4px;background:var(--am);border-radius:50%;display:inline-block"></span>Side Panel — Moderate</div>
+        <div class="f-row"><span class="f-key">Damage type</span><span class="f-val">Scrape + dent</span></div>
+        <div class="f-row"><span class="f-key">Est. repair cost</span><span class="f-val"><span class="flag flag-warn">$800 – $1,400</span></span></div>
+        <div class="f-row"><span class="f-key">Paint match</span><span class="f-val"><span class="flag flag-warn">⚠ Custom color</span></span></div>
+      </div>
+      <div class="f-card damage-c">
+        <div class="fc-tag" style="color:var(--cy)">📋 Total Estimate</div>
+        <div class="f-row"><span class="f-key">Combined repair</span><span class="f-val">$5,000 – $8,200</span></div>
+        <div class="f-row"><span class="f-key">Claim threshold</span><span class="f-val"><span class="flag flag-info">Above deductible</span></span></div>
+        <div class="f-row"><span class="f-key">Recommend</span><span class="f-val">Full structural inspect</span></div>
+      </div>
+    </div>`;
+  renderQDots('left-qdots', 3, 1, 'field');
+  renderQDots('right-qdots', 0, 0, 'field');
+}
+
+function fieldStyle(lc, rc) {
+  lc.innerHTML = `
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+      <div class="street-bg"></div>
+      <div style="position:relative;z-index:2;text-align:center;">
+        <div style="width:clamp(40px,8vw,70px);height:clamp(40px,8vw,70px);border-radius:50%;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:clamp(18px,4vw,32px)">👤</div>
+        <div class="ar-box" style="position:relative;left:auto;top:auto;border-color:rgba(167,139,250,0.5);background:rgba(167,139,250,0.05);border-radius:8px;padding:6px 12px;display:inline-flex;">
+          <div class="ar-label" style="color:#a78bfa">STYLE PROFILE DETECTED</div>
+        </div>
+        <div style="margin-top:8px;font-size:clamp(8px,1vw,10px);color:rgba(255,255,255,0.4);">Casual-chic · Earth tones · Minimalist</div>
+      </div>
+    </div>`;
+  rc.innerHTML = `
+    <div class="right-panel">
+      <div class="rpanel-lbl" style="color:rgba(167,139,250,0.5)">— style intelligence —</div>
+      <div class="f-card style-c">
+        <div class="fc-tag" style="color:#a78bfa"><span style="width:4px;height:4px;background:#a78bfa;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>Recommended Look</div>
+        <div class="f-row"><span class="f-key">Top</span><span class="f-val">Linen blazer — camel</span></div>
+        <div class="f-row"><span class="f-key">Bottom</span><span class="f-val">Wide-leg trouser — ivory</span></div>
+        <div class="f-row"><span class="f-key">Footwear</span><span class="f-val">Tan leather mule</span></div>
+        <div class="f-row"><span class="f-key">Accessory</span><span class="f-val">Tan leather belt — Aisle 4</span></div>
+      </div>
+      <div class="f-card style-c">
+        <div class="fc-tag" style="color:var(--gr)">📦 Live Inventory</div>
+        <div class="f-row"><span class="f-key">Linen blazer</span><span class="f-val"><span class="flag flag-ok">✓ Sz 4–12 in stock</span></span></div>
+        <div class="f-row"><span class="f-key">Wide-leg trouser</span><span class="f-val"><span class="flag flag-ok">✓ Sz 2–14 in stock</span></span></div>
+        <div class="f-row"><span class="f-key">Tan mule</span><span class="f-val"><span class="flag flag-warn">⚠ Sz 8–9 only</span></span></div>
+        <div class="f-row"><span class="f-key">Online alt (mule)</span><span class="f-val">3 options · same-day ship</span></div>
+      </div>
+      <div class="f-card style-c">
+        <div class="fc-tag" style="color:var(--cy)">💡 Upsell</div>
+        <div style="font-size:clamp(8px,1vw,10px);color:rgba(200,220,255,0.7);line-height:1.6;">Silk camisole in ivory completes the look — Rack B, 3 units. Frequently purchased together: +$89 avg basket.</div>
+      </div>
+    </div>`;
+  renderQDots('left-qdots', 3, 2, 'field');
+  renderQDots('right-qdots', 0, 0, 'field');
+}
+
+function fieldKC(lc, rc) {
+  lc.innerHTML = `
+    <div style="position:absolute;inset:0;">
+      <div class="street-bg"></div>
+      <div class="building" style="left:5%;width:20%;height:42%;bottom:28%"></div>
+      <div class="building" style="left:30%;width:15%;height:35%;bottom:28%"></div>
+      <div class="building" style="left:55%;width:25%;height:48%;bottom:28%"></div>
+      <div class="building" style="left:82%;width:14%;height:38%;bottom:28%"></div>
+      <div class="ar-box" style="left:8%;top:18%;width:36%;height:26%;border-color:rgba(6,182,212,0.5);background:rgba(6,182,212,0.04);border-radius:6px;">
+        <div style="font-size:7px;color:var(--cy);font-weight:600;letter-spacing:.5px;">OPPORTUNITY ZONE</div>
+        <div style="font-size:7px;color:rgba(6,182,212,0.6);margin-top:2px;">Waldo/Brookside</div>
+      </div>
+      <div class="ar-box" style="left:56%;top:14%;width:36%;height:26%;border-color:rgba(167,139,250,0.5);background:rgba(167,139,250,0.04);border-radius:6px;">
+        <div style="font-size:7px;color:#a78bfa;font-weight:600;letter-spacing:.5px;">HIGH FOOT TRAFFIC</div>
+        <div style="font-size:7px;color:rgba(167,139,250,0.6);margin-top:2px;">Crossroads/Midtown</div>
+      </div>
+      <div style="position:absolute;bottom:32%;left:50%;transform:translateX(-50%);font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;">Kansas City · Field Intelligence Mode</div>
+      <div class="street"></div>
+    </div>`;
+  rc.innerHTML = `
+    <div class="right-panel">
+      <div class="rpanel-lbl" style="color:rgba(6,182,212,0.5)">— KC market intelligence —</div>
+      <div class="f-card kc-c">
+        <div class="fc-tag" style="color:var(--cy)"><span style="width:4px;height:4px;background:var(--cy);border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>Waldo / Brookside</div>
+        <div class="f-row"><span class="f-key">Population trend</span><span class="f-val"><span class="flag flag-ok">↑ Growing</span></span></div>
+        <div class="f-row"><span class="f-key">Specialty food gap</span><span class="f-val"><span class="flag flag-warn">⚠ High demand</span></span></div>
+        <div class="f-row"><span class="f-key">Yelp signal</span><span class="f-val">847 "nothing nearby" reviews</span></div>
+        <div class="f-row"><span class="f-key">Nearest competitor</span><span class="f-val">0.7mi — low density</span></div>
+        <div class="f-row"><span class="f-key">Opportunity score</span><span class="f-val"><span class="flag flag-ok">87 / 100</span></span></div>
+      </div>
+      <div class="f-card kc-c">
+        <div class="fc-tag" style="color:#a78bfa">Crossroads / Midtown</div>
+        <div class="f-row"><span class="f-key">Median age</span><span class="f-val">32 · young professional</span></div>
+        <div class="f-row"><span class="f-key">Supply skew</span><span class="f-val"><span class="flag flag-warn">⚠ Destination dining</span></span></div>
+        <div class="f-row"><span class="f-key">Resident gap</span><span class="f-val">Everyday F&B underserved</span></div>
+        <div class="f-row"><span class="f-key">Redevelopment</span><span class="f-val"><span class="flag flag-ok">✓ Active — Crossroads</span></span></div>
+        <div class="f-row"><span class="f-key">Opportunity score</span><span class="f-val"><span class="flag flag-ok">79 / 100</span></span></div>
+      </div>
+      <div class="f-card kc-c">
+        <div class="fc-tag" style="color:var(--gr)">💡 InSight Recommendation</div>
+        <div style="font-size:clamp(8px,1vw,10px);color:rgba(180,230,200,0.75);line-height:1.65;">Waldo shows strongest F&B gap signal. Crossroads needs accessible daily retail, not destination concepts. Dashboard analysis confirms both — field walk validates demand in real time.</div>
+      </div>
+    </div>`;
+  renderQDots('left-qdots', 4, 3, 'field');
+  renderQDots('right-qdots', 0, 0, 'field');
+}
+
+function renderQDots(id, total, active, mode) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  if (total === 0) return;
+  const lbl = document.createElement('div');
+  lbl.style.cssText = 'font-size:7px;color:rgba(255,255,255,0.2);letter-spacing:1px;text-transform:uppercase;margin-right:4px;';
+  lbl.textContent = 'Queue';
+  el.appendChild(lbl);
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'qdot' + (i === active ? (mode === 'field' ? ' field-active' : ' active') : i < active ? ' done' : '');
+    el.appendChild(d);
+  }
+}
+
+function doClip(label) {
+  const cc = document.getElementById('clip-confirm');
+  document.getElementById('clip-text').textContent = label + ' — citation synced to library';
+  cc.classList.remove('hide');
+  clearTimeout(clipTimeout);
+  clipTimeout = setTimeout(() => cc.classList.add('hide'), 4000);
+  const gazeEl = document.getElementById('gaze-clip');
+  if (gazeEl) gazeEl.className = 'clipped';
+}
+
+function renderControls() {
+  const c = document.getElementById('controls');
+  if (mainMode === 'scholar') {
+    c.innerHTML = `
+      <div class="remote-sim">
+        <div class="rlbl">🎮 REMOTE</div>
+        <button class="rbtn" onclick="prevScenario()">◀</button>
+        <button class="rbtn" onclick="nextScenario()">▶</button>
+        <button class="rbtn" onclick="doClip('Current passage')">✂ Clip</button>
+        <button class="rbtn" id="rec-btn" onclick="toggleRec()">⏺</button>
+      </div>
+      <div class="divdr"></div>
+      <button class="ctrl go scholar-go" onclick="setScenario(0)">📄 Archival Scan</button>
+      <button class="ctrl go scholar-go" onclick="setScenario(1)">✂ Quote Clip</button>
+      <button class="ctrl go scholar-go" onclick="setScenario(2)">🔗 Idea Connect</button>
+      <button class="ctrl go scholar-go" onclick="setScenario(3)">✍ Write First</button>
+      <div class="divdr"></div>
+      <button class="ctrl red" onclick="resetScene()">↺ Reset</button>`;
+  } else {
+    c.innerHTML = `
+      <div class="remote-sim">
+        <div class="rlbl">🎮 REMOTE</div>
+        <button class="rbtn" onclick="prevScenario()">◀</button>
+        <button class="rbtn" onclick="nextScenario()">▶</button>
+        <button class="rbtn" onclick="alert('Scan saved to report')">💾 Save</button>
+        <button class="rbtn" id="rec-btn" onclick="toggleRec()">⏺</button>
+      </div>
+      <div class="divdr"></div>
+      <button class="ctrl go field-go" onclick="setScenario(0)">🏍 Vehicle Scan</button>
+      <button class="ctrl go field-go" onclick="setScenario(1)">🛡 Damage Flag</button>
+      <button class="ctrl go field-go" onclick="setScenario(2)">👗 Style Assist</button>
+      <button class="ctrl go field-go" onclick="setScenario(3)">🏙 KC Field Intel</button>
+      <div class="divdr"></div>
+      <button class="ctrl red" onclick="resetScene()">↺ Reset</button>`;
+  }
+}
+
+function prevScenario() { if (scenario > 0) setScenario(scenario - 1); }
+function nextScenario() { const max = mainMode === 'scholar' ? 3 : 3; if (scenario < max) setScenario(scenario + 1); }
+function resetScene() { setScenario(0); }
+let recording = false;
+function toggleRec() {
+  recording = !recording;
+  const b = document.getElementById('rec-btn');
+  if (b) { b.style.color = recording ? '#ef4444' : ''; b.style.textShadow = recording ? '0 0 6px #ef4444' : ''; }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') nextScenario();
+  if (e.key === 'ArrowLeft') prevScenario();
+  if (e.key === 's' || e.key === 'S') setMainMode('scholar');
+  if (e.key === 'f' || e.key === 'F') setMainMode('field');
+});
+
+setMainMode('scholar');
+</script>
+</body>
+</html>
