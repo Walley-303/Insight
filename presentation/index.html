@@ -87,7 +87,7 @@ input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;}
 .ct-tag{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,158,11,0.6);margin-bottom:3px;font-weight:600;}
 .ct-txt{font-size:clamp(11px,3vw,13px);color:rgba(255,220,150,0.75);line-height:1.65;}
 .qa-btns{padding:8px 12px;display:flex;gap:7px;background:rgba(0,0,0,0.55);border-top:1px solid var(--b1);flex-shrink:0;}
-.mic-ind{position:fixed;bottom:85px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:17px;z-index:500;backdrop-filter:blur(8px);transition:all .25s;}
+.mic-ind{position:fixed;top:52px;right:14px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:15px;z-index:500;backdrop-filter:blur(8px);transition:all .25s;}
 .mic-ind.on{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.45);}
 .mic-ind.hearing{background:rgba(34,197,94,0.25);border-color:rgba(34,197,94,0.5);box-shadow:0 0 10px rgba(34,197,94,0.35);animation:mpulse .4s ease infinite;}
 .resp-ov{position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:300;display:flex;flex-direction:column;padding:28px 22px 18px;gap:12px;transition:opacity .3s;}
@@ -220,6 +220,7 @@ input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;}
   </div>
   <div class="ctrl-bar" style="background:transparent;padding:4px 0;gap:8px;">
     <div class="btn pu" onclick="toggleRoAuto()" id="ro-auto-btn" style="flex:1">▶ Start</div>
+    <div class="btn gr" id="ro-mic-btn" onclick="toggleListen()" style="flex:1">🎙 Listen</div>
     <div class="btn re" onclick="dismissResp()" style="flex:1">✕ Dismiss</div>
   </div>
   <div class="ro-done" id="ro-done"></div>
@@ -455,44 +456,65 @@ function startListen() {
   recognition.start();
   listening = true;
   document.getElementById('mic-ind').classList.add('on');
-  var mb = document.getElementById('mic-btn');
-  var qm = document.getElementById('qa-mic');
-  if (mb) { mb.textContent = '⏹ Stop'; mb.classList.add('live'); }
-  if (qm) { qm.textContent = '⏹ Stop'; qm.classList.add('live'); }
+  ['mic-btn','qa-mic','ro-mic-btn'].forEach(function(id) {
+    var b = document.getElementById(id);
+    if (b) { b.textContent = '⏹ Stop'; b.classList.add('live'); }
+  });
 }
 
 function stopListen() {
   if (recognition) recognition.stop();
   listening = false;
   document.getElementById('mic-ind').classList.remove('on', 'hearing');
-  var mb = document.getElementById('mic-btn');
-  var qm = document.getElementById('qa-mic');
-  if (mb) { mb.textContent = '🎙 Mic'; mb.classList.remove('live'); }
-  if (qm) { qm.textContent = '🎙 Listen'; qm.classList.remove('live'); }
+  ['mic-btn','qa-mic','ro-mic-btn'].forEach(function(id) {
+    var b = document.getElementById(id);
+    if (b) {
+      b.classList.remove('live');
+      if (id === 'mic-btn') b.textContent = '🎙 Mic';
+      else if (id === 'qa-mic') b.textContent = '🎙 Listen';
+      else b.textContent = '🎙 Listen';
+    }
+  });
 }
 
 function strip(s) { return s.replace(/[^a-z0-9]/g, '').toLowerCase(); }
 
+// common short words that shouldn't block progress
+var SKIP_WORDS = {'a':1,'an':1,'the':1,'of':1,'to':1,'in':1,'is':1,'it':1,'i':1,'and':1,'or':1,'at':1,'on':1,'for':1,'by':1,'as':1,'we':1,'be':1,'my':1};
+
 function matchScript(text) {
   var sw = text.trim().split(/\s+/).filter(Boolean);
+  if (!sw.length) return;
   var bestIdx = -1, bestRun = 0;
-  for (var start = wi; start < Math.min(wi + 20, WORDS.length); start++) {
+  // search ahead up to 25 words
+  for (var start = wi; start < Math.min(wi + 25, WORDS.length); start++) {
     var run = 0;
     for (var j = 0; j < sw.length && start + j < WORDS.length; j++) {
-      if (strip(WORDS[start + j]) === strip(sw[j])) run++;
+      var a = strip(WORDS[start + j]);
+      var b = strip(sw[j]);
+      // exact match or fuzzy: one starts with the other (handles partial recognition)
+      if (a === b || (a.length > 2 && b.length > 2 && (a.indexOf(b) === 0 || b.indexOf(a) === 0))) run++;
       else break;
     }
     if (run > bestRun) { bestRun = run; bestIdx = start + run; }
   }
   if (bestRun >= 1 && bestIdx > wi) {
     var jump = bestIdx - wi;
-    if (jump > 4 && bestRun < 2) return;
+    // allow skip words to bridge gaps without requiring 2-word confirmation
+    if (jump > 6 && bestRun < 2) return;
+    // skip over any stuck common words between current and match
     wi = Math.min(bestIdx, WORDS.length - 1);
     offScript = false;
     updateWordStyles(); updateProgBar(); scrollToCurrent();
-  } else if (bestRun === 0) {
-    offScript = true; updateWordStyles();
-    setTimeout(function() { offScript = false; updateWordStyles(); }, 2000);
+  } else {
+    // try advancing past short stuck words automatically
+    if (wi < WORDS.length - 1 && SKIP_WORDS[strip(WORDS[wi])]) {
+      wi++;
+      updateWordStyles(); updateProgBar(); scrollToCurrent();
+    } else {
+      offScript = true; updateWordStyles();
+      setTimeout(function() { offScript = false; updateWordStyles(); }, 1500);
+    }
   }
 }
 
@@ -516,13 +538,29 @@ function matchRoScript(text) {
 }
 
 function checkWake(text) {
-  if (text.toLowerCase().indexOf('insight reveal') !== -1 || text.toLowerCase().indexOf('insight activate') !== -1) {
-    var t = document.getElementById('wake-toast');
-    t.classList.remove('hide');
-    clearTimeout(wakeTO);
-    wakeTO = setTimeout(function() { t.classList.add('hide'); }, 2500);
+  var t = text.toLowerCase();
+  // wake word to Q&A mode
+  if (t.indexOf('insight reveal') !== -1 || t.indexOf('insight activate') !== -1) {
+    showWakeToast();
     setTimeout(goQA, 700);
   }
+  // auto Q&A trigger phrases — natural presentation handoff
+  if (t.indexOf('open it up for questions') !== -1 ||
+      t.indexOf('open the floor') !== -1 ||
+      t.indexOf('take your questions') !== -1 ||
+      t.indexOf('happy to take questions') !== -1 ||
+      t.indexOf('welcome your questions') !== -1) {
+    showWakeToast('Switching to Q&A mode…');
+    setTimeout(goQA, 1200);
+  }
+}
+
+function showWakeToast(msg) {
+  var t = document.getElementById('wake-toast');
+  t.textContent = msg || '"InSight Reveal" · Activating…';
+  t.classList.remove('hide');
+  clearTimeout(wakeTO);
+  wakeTO = setTimeout(function() { t.classList.add('hide'); }, 2500);
 }
 
 function initProgressBar() {
