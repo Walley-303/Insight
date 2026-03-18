@@ -17,8 +17,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',s
 #home{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 24px;gap:14px;overflow-y:auto;}
 .home-logo{font-size:48px;font-weight:900;background:linear-gradient(135deg,#fff 30%,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-2px;}
 .home-sub{font-size:11px;color:#444;letter-spacing:2px;text-transform:uppercase;text-align:center;line-height:1.8;}
-.home-badge{background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);color:#a78bfa;font-size:11px;border-radius:100px;padding:4px 16px;margin-bottom:8px;}
-.home-cards{display:flex;flex-direction:column;gap:10px;width:100%;max-width:380px;}
+.home-badge{background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);color:#a78bfa;font-size:11px;border-radius:100px;padding:4px 16px;}
+.home-cards{display:flex;flex-direction:column;gap:10px;width:100%;max-width:380px;margin-top:8px;}
 .hcard{background:rgba(255,255,255,0.04);border:1px solid var(--b1);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:14px;}
 .hcard:active{background:rgba(124,58,237,0.1);border-color:rgba(124,58,237,0.35);transform:scale(0.98);}
 .hcard-icon{font-size:24px;flex-shrink:0;}
@@ -37,60 +37,59 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',s
 .tb-btn.live{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:var(--re);}
 .live-dot{width:5px;height:5px;border-radius:50%;background:var(--gr);box-shadow:0 0 5px var(--gr);animation:pulse 2s infinite;}
 
-/* TELEPROMPTER VIEW */
-#tp-view{flex:1;display:none;flex-direction:column;overflow:hidden;}
-#tp-view.active{display:flex;}
+/* VIEWS */
+#tp-view,#qa-view{flex:1;display:none;flex-direction:column;overflow:hidden;}
+#tp-view.active,#qa-view.active{display:flex;}
+
+/* SLIDE NAV */
 .slide-nav{padding:6px 14px;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border-bottom:1px solid var(--b1);flex-shrink:0;}
 .sdots{display:flex;gap:5px;}
 .sdot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.12);transition:all .3s;cursor:pointer;}
 .sdot.active{background:var(--pul);box-shadow:0 0 5px var(--pul);}
 .sdot.done{background:rgba(255,255,255,0.3);}
 .slide-counter{font-size:10px;color:#444;margin-left:auto;}
-.slide-head{padding:8px 16px;background:rgba(124,58,237,0.07);border-bottom:1px solid rgba(124,58,237,0.12);flex-shrink:0;}
+.slide-head{padding:7px 16px;background:rgba(124,58,237,0.07);border-bottom:1px solid rgba(124,58,237,0.12);flex-shrink:0;}
 .slide-title{font-size:11px;font-weight:700;color:#a78bfa;letter-spacing:.5px;text-transform:uppercase;}
-.slide-pts{font-size:9px;color:rgba(124,58,237,0.5);margin-top:2px;font-weight:600;letter-spacing:.5px;}
-.prompter-zone{flex:1;position:relative;overflow:hidden;padding:0;}
-.pz-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(124,58,237,0.04),transparent);pointer-events:none;z-index:0;}
-.pz-bg::before{content:'';position:absolute;top:0;left:0;right:0;height:20%;background:linear-gradient(to bottom,#06060f,transparent);z-index:2;pointer-events:none;}
-.pz-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:20%;background:linear-gradient(to top,#06060f,transparent);z-index:2;pointer-events:none;}
-.pz-scroll{position:absolute;inset:0;overflow:hidden;z-index:1;}
-.pz-inner{position:absolute;left:0;right:0;padding:0 18px;text-align:center;line-height:2.2;}
-.pz-word{display:inline;font-size:clamp(15px,4.2vw,21px);line-height:2.2;transition:opacity 0.15s,color 0.15s,font-weight 0.15s;}
-.pz-anchor{position:absolute;left:0;right:0;pointer-events:none;z-index:3;}
-.pz-anchor-line{position:absolute;left:12%;right:12%;height:1.5px;background:rgba(124,58,237,0.15);border-radius:1px;}
-.w-done{color:rgba(255,255,255,0.18);}
-.w-cur{color:#fff;font-weight:600;background:rgba(100,140,255,0.22);border-radius:4px;padding:1px 5px;}
-.w-next{color:rgba(255,255,255,0.62);}
-.w-off{color:var(--am);font-weight:600;background:rgba(245,158,11,0.12);border-radius:4px;padding:1px 5px;text-decoration:underline;}
-.prog{height:18px;background:rgba(255,255,255,0.05);flex-shrink:0;cursor:pointer;display:flex;align-items:center;padding:0 2px;position:relative;}
-.prog-f{height:4px;background:linear-gradient(90deg,rgba(124,58,237,0.6),rgba(6,182,212,0.6));border-radius:2px;transition:width .15s;pointer-events:none;}
-.prog-thumb{position:absolute;width:14px;height:14px;border-radius:50%;background:#a78bfa;border:2px solid #fff;transform:translateX(-50%);transition:left .15s;pointer-events:none;top:50%;margin-top:-7px;}
-.speed-row{padding:5px 12px;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border-top:1px solid var(--b1);flex-shrink:0;}
-.speed-lbl{font-size:9px;color:#444;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
-.speed-val{font-size:10px;color:#a78bfa;font-weight:600;min-width:36px;text-align:right;}
-input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:pointer;}
-.mic-indicator{position:fixed;bottom:90px;right:14px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:500;transition:all .3s;backdrop-filter:blur(8px);}
-.mic-indicator.active{background:rgba(239,68,68,0.25);border-color:rgba(239,68,68,0.5);box-shadow:0 0 12px rgba(239,68,68,0.3);}
-.mic-indicator.hearing{background:rgba(34,197,94,0.25);border-color:rgba(34,197,94,0.5);box-shadow:0 0 12px rgba(34,197,94,0.3);animation:mic-pulse .5s ease infinite;}
-@keyframes mic-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
-.tp-btns{padding:8px 12px;display:flex;gap:7px;background:rgba(0,0,0,0.55);border-top:1px solid var(--b1);flex-shrink:0;}
-.btn{background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:#888;border-radius:7px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s;flex:1;text-align:center;white-space:nowrap;}
+.slide-pts{font-size:9px;color:rgba(124,58,237,0.45);margin-top:1px;}
+
+/* STATIC GLOW TELEPROMPTER */
+.script-zone{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;position:relative;}
+.script-zone::-webkit-scrollbar{display:none;}
+.script-text{font-size:clamp(15px,4vw,20px);line-height:2.1;text-align:left;word-spacing:3px;}
+.sw{display:inline;cursor:pointer;border-radius:3px;padding:1px 2px;transition:color .15s,background .15s;}
+.sw.done{color:rgba(100,160,255,0.45);}
+.sw.cur{color:#fff;font-weight:700;background:rgba(100,160,255,0.25);border-radius:4px;padding:1px 5px;box-shadow:0 0 8px rgba(100,160,255,0.3);}
+.sw.cur.offscript{color:var(--am);background:rgba(245,158,11,0.18);box-shadow:0 0 8px rgba(245,158,11,0.25);}
+.sw.upcoming{color:rgba(220,230,255,0.7);}
+
+/* CONTROLS */
+.ctrl-bar{padding:7px 12px;display:flex;gap:6px;align-items:center;background:rgba(0,0,0,0.6);border-top:1px solid var(--b1);flex-shrink:0;}
+.btn{background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:#888;border-radius:7px;padding:7px 10px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s;text-align:center;white-space:nowrap;}
 .btn:active{background:rgba(255,255,255,0.12);color:#fff;}
 .btn.pu{background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.3);color:#a78bfa;font-weight:600;}
 .btn.cy{background:rgba(6,182,212,0.12);border-color:rgba(6,182,212,0.25);color:var(--cy);font-weight:600;}
 .btn.gr{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.25);color:var(--gr);font-weight:600;}
 .btn.re{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);color:var(--re);}
 
-/* QA VIEW */
-#qa-view{flex:1;display:none;flex-direction:column;overflow:hidden;}
-#qa-view.active{display:flex;}
+/* SPEED ROW */
+.speed-row{padding:5px 14px;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.4);border-top:1px solid rgba(255,255,255,0.04);flex-shrink:0;}
+.sp-lbl{font-size:13px;}
+.sp-val{font-size:10px;color:#a78bfa;font-weight:600;min-width:52px;text-align:center;}
+input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;}
+
+/* PROGRESS */
+.prog-wrap{height:20px;background:rgba(255,255,255,0.04);flex-shrink:0;cursor:pointer;display:flex;align-items:center;padding:0 3px;position:relative;border-top:1px solid rgba(255,255,255,0.04);}
+.prog-fill{height:3px;background:linear-gradient(90deg,rgba(124,58,237,0.5),rgba(6,182,212,0.5));border-radius:2px;pointer-events:none;}
+.prog-thumb{position:absolute;width:13px;height:13px;border-radius:50%;background:#a78bfa;border:2px solid #fff;transform:translateX(-50%);top:50%;margin-top:-6.5px;pointer-events:none;}
+
+/* QA */
 .qa-head{padding:9px 14px;background:rgba(6,182,212,0.07);border-bottom:1px solid rgba(6,182,212,0.15);display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .qa-title{font-size:11px;font-weight:700;color:var(--cy);letter-spacing:.5px;text-transform:uppercase;}
 .qa-hint{font-size:9px;color:#3a4560;margin-left:auto;}
 .qa-scroll{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch;}
 .qa-scroll::-webkit-scrollbar{display:none;}
-.qa-idle{display:flex;flex-direction:column;gap:7px;padding-top:6px;}
-.qa-idle-label{font-size:9px;color:#3a4560;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;text-align:center;}
+.qa-idle{display:flex;flex-direction:column;gap:7px;}
+.qa-idle-label{font-size:9px;color:#3a4560;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;text-align:center;}
 .topic-btn{background:rgba(255,255,255,0.04);border:1px solid var(--b1);color:#9aa0b8;border-radius:10px;padding:11px 14px;cursor:pointer;font-family:inherit;font-size:12px;text-align:left;transition:all .2s;line-height:1.4;}
 .topic-btn:active{background:rgba(124,58,237,0.1);border-color:rgba(124,58,237,0.3);color:#a78bfa;}
 .resp-card{background:rgba(0,6,24,0.8);border:1px solid rgba(100,150,255,0.2);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
@@ -108,21 +107,30 @@ input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:poi
 .ct-txt{font-size:clamp(11px,3vw,13px);color:rgba(255,220,150,0.75);line-height:1.65;}
 .qa-btns{padding:8px 12px;display:flex;gap:7px;background:rgba(0,0,0,0.55);border-top:1px solid var(--b1);flex-shrink:0;}
 
-/* RESPONSE OVERLAY */
-.resp-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:300;display:flex;flex-direction:column;padding:28px 22px 20px;gap:14px;transition:opacity .3s;}
-.resp-overlay.hide{opacity:0;pointer-events:none;}
+/* MIC INDICATOR */
+.mic-ind{position:fixed;bottom:85px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:17px;z-index:500;transition:all .25s;backdrop-filter:blur(8px);}
+.mic-ind.on{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.45);}
+.mic-ind.hearing{background:rgba(34,197,94,0.25);border-color:rgba(34,197,94,0.5);box-shadow:0 0 10px rgba(34,197,94,0.35);animation:mpulse .4s ease infinite;}
+@keyframes mpulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+
+/* RESP OVERLAY */
+.resp-ov{position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:300;display:flex;flex-direction:column;padding:28px 22px 18px;gap:12px;transition:opacity .3s;}
+.resp-ov.hide{opacity:0;pointer-events:none;}
 .ro-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(100,200,130,0.7);font-weight:600;}
-.ro-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.ro-text{font-size:clamp(16px,5vw,24px);line-height:2.1;color:rgba(200,240,210,0.85);}
-.rw-done{color:rgba(255,255,255,0.18);}
-.rw-cur{color:#fff;font-weight:600;background:rgba(100,200,130,0.2);border-radius:4px;padding:1px 5px;}
-.rw-next{color:rgba(200,240,210,0.62);}
-.ro-prog{height:2px;background:rgba(255,255,255,0.05);flex-shrink:0;}
-.ro-prog-f{height:100%;background:linear-gradient(90deg,rgba(100,200,130,0.5),rgba(6,182,212,0.4));border-radius:1px;transition:width .4s;}
-.ro-done{text-align:center;font-size:11px;color:#444;padding:6px;}
+.ro-script{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.ro-text{font-size:clamp(15px,4.5vw,22px);line-height:2.1;}
+.rw{display:inline;border-radius:3px;padding:1px 2px;transition:color .15s,background .15s;}
+.rw.done{color:rgba(100,200,130,0.4);}
+.rw.cur{color:#fff;font-weight:700;background:rgba(100,200,130,0.2);border-radius:4px;padding:1px 5px;}
+.rw.upcoming{color:rgba(200,240,210,0.65);}
+.ro-prog-wrap{height:16px;background:rgba(255,255,255,0.04);cursor:pointer;display:flex;align-items:center;padding:0 3px;position:relative;flex-shrink:0;}
+.ro-prog-fill{height:3px;background:linear-gradient(90deg,rgba(100,200,130,0.5),rgba(6,182,212,0.4));border-radius:2px;pointer-events:none;}
+.ro-prog-thumb{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--gr);border:2px solid #fff;transform:translateX(-50%);top:50%;margin-top:-6px;pointer-events:none;}
+.ro-done{text-align:center;font-size:11px;color:#444;flex-shrink:0;}
+.ro-speed{padding:4px 0;display:flex;align-items:center;gap:8px;flex-shrink:0;}
 
 /* WAKE TOAST */
-.wake-toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);border-radius:100px;padding:6px 18px;font-size:10px;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;transition:opacity .4s;white-space:nowrap;z-index:400;}
+.wake-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);border-radius:100px;padding:6px 18px;font-size:10px;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;transition:opacity .4s;white-space:nowrap;z-index:400;}
 .wake-toast.hide{opacity:0;pointer-events:none;}
 
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
@@ -134,24 +142,24 @@ input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:poi
 <!-- HOME -->
 <div id="home">
   <div class="home-logo">InSight</div>
-  <div class="home-sub">HISTORY 488 · UMKC · Spring 2026<br/>AI, Entrepreneurship & History — Midterm</div>
-  <div class="home-badge">Walley · Mid-Term Proposal Presentation</div>
+  <div class="home-sub">HISTORY 488 · UMKC · Spring 2026<br/>AI, Entrepreneurship & History</div>
+  <div class="home-badge">Walley · Mid-Term Proposal</div>
   <div class="home-cards">
     <div class="hcard" onclick="startPresentation()">
       <div class="hcard-icon">📜</div>
-      <div><div class="hcard-title">Start Presentation</div><div class="hcard-desc">6 slides · voice-matched teleprompter · ~8–15 min</div></div>
+      <div><div class="hcard-title">Start Presentation</div><div class="hcard-desc">7 slides · static glow teleprompter · voice-tracked</div></div>
     </div>
     <div class="hcard" onclick="goQA()">
       <div class="hcard-icon">❓</div>
-      <div><div class="hcard-title">Q&A Mode</div><div class="hcard-desc">Pre-loaded responses for expected questions. Say "InSight Reveal."</div></div>
+      <div><div class="hcard-title">Q&A Mode</div><div class="hcard-desc">Pre-loaded responses. Say "InSight Reveal" to activate.</div></div>
     </div>
     <div class="hcard" onclick="goQA(); setTimeout(()=>loadTopic(3),200)">
       <div class="hcard-icon">🏙</div>
-      <div><div class="hcard-title">KC Research Demo</div><div class="hcard-desc">Jump straight to Kansas City findings for live demo.</div></div>
+      <div><div class="hcard-title">KC Research Demo</div><div class="hcard-desc">Jump to Kansas City market findings.</div></div>
     </div>
     <div class="hcard" onclick="goQA(); setTimeout(()=>loadTopic(6),200)">
       <div class="hcard-icon">📋</div>
-      <div><div class="hcard-title">AI Disclosure Statement</div><div class="hcard-desc">Required disclosure — tools used, limitations, my own conclusions.</div></div>
+      <div><div class="hcard-title">AI Disclosure</div><div class="hcard-desc">Required disclosure statement.</div></div>
     </div>
   </div>
 </div>
@@ -160,7 +168,7 @@ input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:poi
 <div id="app">
   <div class="topbar">
     <div class="tb-logo">InSight</div>
-    <div class="tb-pill" id="mode-pill" style="background:rgba(124,58,237,0.12);border-color:rgba(124,58,237,0.25);color:#a78bfa;">SPEAKING</div>
+    <div class="tb-pill" id="mode-pill" style="background:rgba(124,58,237,0.12);border-color:rgba(124,58,237,0.25);color:#a78bfa;">READY</div>
     <div class="tb-right">
       <div class="live-dot"></div>
       <button class="tb-btn" id="mic-btn" onclick="toggleListen()">🎙 Mic</button>
@@ -168,7 +176,7 @@ input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:poi
     </div>
   </div>
 
-  <!-- TELEPROMPTER -->
+  <!-- TELEPROMPTER VIEW -->
   <div id="tp-view">
     <div class="slide-nav">
       <div class="sdots" id="sdots"></div>
@@ -178,37 +186,36 @@ input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:poi
       <div class="slide-title" id="slide-title"></div>
       <div class="slide-pts" id="slide-pts"></div>
     </div>
-    <div class="prompter-zone">
-      <div class="pz-bg"></div>
-      <div class="pz-text" id="pz-text"></div>
+    <div class="script-zone" id="script-zone">
+      <div class="script-text" id="script-text"></div>
     </div>
-    <div class="prog" id="prog-bar">
-      <div class="prog-f" id="prog-f"></div>
-      <div class="prog-thumb" id="prog-thumb"></div>
+    <div class="prog-wrap" id="prog-wrap">
+      <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+      <div class="prog-thumb" id="prog-thumb" style="left:0%"></div>
     </div>
     <div class="speed-row">
-      <span class="speed-lbl">🐢</span>
-      <input type="range" class="speed-slider" id="speed-slider" min="400" max="2400" value="800" oninput="updateSpeed(this.value)"/>
-      <span class="speed-lbl">🐇</span>
-      <span class="speed-val" id="speed-val">Normal</span>
+      <span class="sp-lbl">🐢</span>
+      <input type="range" class="sp-slider" id="speed-slider" min="300" max="1800" value="800" oninput="updateSpeed(this.value)"/>
+      <span class="sp-lbl">🐇</span>
+      <span class="sp-val" id="speed-val">Normal</span>
     </div>
-    <div class="tp-btns">
-      <div class="btn" onclick="prevSlide()">◀</div>
-      <div class="btn pu" onclick="toggleAuto()" id="auto-btn">⏸</div>
-      <div class="btn" onclick="nextSlide()">▶</div>
-      <div class="btn cy" onclick="goQA()">Q&A →</div>
+    <div class="ctrl-bar">
+      <div class="btn" onclick="prevSlide()" style="flex:0 0 auto;padding:7px 14px">◀</div>
+      <div class="btn pu" onclick="toggleAuto()" id="auto-btn" style="flex:1">▶ Start</div>
+      <div class="btn" onclick="nextSlide()" style="flex:0 0 auto;padding:7px 14px">▶</div>
+      <div class="btn cy" onclick="goQA()" style="flex:1">Q&A →</div>
     </div>
   </div>
 
-  <!-- Q&A -->
+  <!-- QA VIEW -->
   <div id="qa-view">
     <div class="qa-head">
       <div class="qa-title">Q&A · InSight Assist</div>
-      <div class="qa-hint">Say "InSight Reveal" to activate</div>
+      <div class="qa-hint">Say "InSight Reveal"</div>
     </div>
     <div class="qa-scroll" id="qa-scroll">
       <div class="qa-idle" id="qa-idle">
-        <div class="qa-idle-label">Expected questions — tap to load</div>
+        <div class="qa-idle-label">Tap a topic to load response</div>
         <div class="topic-btn" onclick="loadTopic(0)">📊 Where does the data come from?</div>
         <div class="topic-btn" onclick="loadTopic(1)">💰 How does this make money?</div>
         <div class="topic-btn" onclick="loadTopic(2)">⚖ Ethical implications / redlining?</div>
@@ -219,385 +226,415 @@ input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:poi
       </div>
     </div>
     <div class="qa-btns">
-      <div class="btn re" onclick="clearQA()">↺ Clear</div>
-      <div class="btn pu" onclick="backToScript()">← Script</div>
-      <div class="btn gr" id="qa-mic" onclick="toggleListen()">🎙 Listen</div>
+      <div class="btn re" onclick="clearQA()" style="flex:0 0 auto">↺</div>
+      <div class="btn pu" onclick="backToScript()" style="flex:1">← Script</div>
+      <div class="btn gr" id="qa-mic" onclick="toggleListen()" style="flex:1">🎙 Listen</div>
     </div>
   </div>
 </div>
 
-<!-- RESPONSE OVERLAY -->
-<div class="resp-overlay hide" id="resp-ov">
-  <div class="ro-tag">▶ InSight — Response Active</div>
-  <div class="ro-scroll"><div class="ro-text" id="ro-text"></div></div>
-  <div class="ro-prog"><div class="ro-prog-f" id="ro-prog-f"></div></div>
+<!-- RESPONSE OVERLAY — same teleprompter behavior -->
+<div class="resp-ov hide" id="resp-ov">
+  <div class="ro-tag">▶ InSight Response — Teleprompter Active</div>
+  <div class="ro-script">
+    <div class="ro-text" id="ro-text"></div>
+  </div>
+  <div class="ro-prog-wrap" id="ro-prog-wrap">
+    <div class="ro-prog-fill" id="ro-prog-fill" style="width:0%"></div>
+    <div class="ro-prog-thumb" id="ro-prog-thumb" style="left:0%"></div>
+  </div>
+  <div class="ro-speed">
+    <span class="sp-lbl" style="font-size:12px">🐢</span>
+    <input type="range" class="sp-slider" id="ro-speed-slider" min="300" max="1800" value="800" oninput="updateRoSpeed(this.value)" style="flex:1"/>
+    <span class="sp-lbl" style="font-size:12px">🐇</span>
+    <span class="sp-val" id="ro-speed-val">Normal</span>
+  </div>
+  <div class="ctrl-bar" style="background:transparent;padding:4px 0;gap:8px;">
+    <div class="btn pu" onclick="toggleRoAuto()" id="ro-auto-btn" style="flex:1">▶ Start</div>
+    <div class="btn re" onclick="dismissResp()" style="flex:1">✕ Dismiss</div>
+  </div>
   <div class="ro-done" id="ro-done"></div>
-  <div class="btn re" onclick="dismissResp()" style="flex:none;padding:10px;text-align:center;border-radius:8px;">✕ Dismiss & Return</div>
 </div>
 
 <!-- MIC INDICATOR -->
-<div class="mic-indicator" id="mic-ind">🎙</div>
+<div class="mic-ind" id="mic-ind">🎙</div>
 
 <!-- WAKE TOAST -->
-<div class="wake-toast hide" id="wake-toast">"InSight Reveal" — Activating…</div>
+<div class="wake-toast hide" id="wake-toast">"InSight Reveal" · Activating…</div>
 
 <script>
 // ===== SLIDES =====
 const SLIDES = [
-  {
-    title: "Introduction — Setting the Stage",
-    pts: "Clarity & Organization · Research Question & Context",
-    script: "Good afternoon. My name is Walley, and I'm presenting my midterm project proposal for History 488. I want to open by being transparent about something unusual — the tool I'm using to deliver this presentation is the same tool my research project is about. What you're watching right now is InSight: an AI-powered platform I'm building that delivers real-time intelligence to the user. The teleprompter running on this phone, the AI responses I'll use during questions — that's InSight. This project sits at the intersection of artificial intelligence, entrepreneurship, and local economic history. And I want to argue that those three things are not separate domains. They are the same conversation."
-  },
-  {
-    title: "Research Question & Context",
-    pts: "Research Question & Context — 14 points",
-    script: "My central research question is: How can AI-driven analysis of consumer reviews, demographic data, and business location patterns reveal underserved market niches within Kansas City's local economy? This question matters because the problem of entrepreneurial opportunity recognition is not new — it is a historical problem. Entrepreneurs across every era have made high-stakes decisions with incomplete information, relying on intuition, local knowledge, and social networks. What has changed is the scale of available data and the tools to process it. Yelp, Google Maps, and city open data portals now generate enormous volumes of consumer signal that most small business owners never see. AI changes who has access to that signal — and that is an entrepreneurial and historical question worth taking seriously."
-  },
-  {
-    title: "Methodology — Three-Layer AI Analysis",
-    pts: "Thoughtful AI Application · Interdisciplinary Source Integration — 14 pts each",
-    script: "My methodology uses three overlapping layers of analysis. First, sentiment analysis of consumer reviews — using AI text classification to identify recurring complaints, unmet demands, and gaps in service across Yelp and Google Maps data. Second, keyword clustering — AI models detecting what consumers repeatedly mention as absent or inadequate in specific geographic corridors. Third, demographic overlay — comparing business density against population growth, income levels, and neighborhood redevelopment data from the US Census Bureau and Kansas City's open data portal. The power is in triangulation. No single data source is reliable alone. When sentiment data, keyword clustering, and demographic trends all point to the same gap — that convergence is meaningful signal. AI enables that convergence analysis at a scale no individual researcher could achieve manually. But AI alone cannot determine whether an opportunity is viable. Human judgment remains essential to interpret local context, cultural dynamics, and regulatory factors."
-  },
-  {
-    title: "Kansas City Findings",
-    pts: "Analytical Insight · Interdisciplinary Source Integration",
-    script: "I focused on two Kansas City neighborhoods with contrasting profiles. In Waldo and Brookside — strong community identity, growing population, high neighborhood loyalty — the data shows a documented gap in specialty food and retail. Over eight hundred Yelp reviews in the corridor cite lack of nearby options. Recent anchor concepts have closed. The opportunity signal is strong. In Crossroads and Midtown — thirty-two hundred residents, median age thirty-two, high foot traffic — the supply is skewed toward destination dining and nightlife. The people who actually live there are underserved on everyday food and accessible retail. Same city. Same general area. Inverse opportunity profiles. That distinction only becomes visible when you layer sentiment data against demographic data against business density. That is what AI makes possible — and what this project demonstrates."
-  },
-  {
-    title: "InSight — The Tool Behind the Research",
-    pts: "Entrepreneurial Innovation Implications · Critical AI Engagement",
-    script: "Here is the meta-layer of this project. The analysis I just described — sentiment processing, demographic overlay, gap identification — is exactly what InSight is designed to do automatically, for any entrepreneur who needs it. Historically, this type of market intelligence cost tens of thousands of dollars from consulting firms. Less than three percent of small businesses use formal market research before launching — primarily because of cost. InSight changes that access equation. What I ran manually in this project is InSight's first case study. And the platform extends further — into field intelligence delivered through smart glasses, so an entrepreneur walking through Waldo sees this data surfaced in real time as they look at storefronts. The research you do at a desk and the judgment you exercise in the field become one continuous intelligence layer. That is the entrepreneurial implication of this research."
-  },
-  {
-    title: "Ethical Reflection & AI Limitations",
-    pts: "Ethical & Methodological Reflection — 14 points",
-    script: "I want to address the ethical dimensions directly, because this assignment specifically requires it. Three concerns I've wrestled with in designing this methodology. First — review data bias. Online review platforms over-represent younger, more tech-engaged, and generally more affluent demographics. A 2020 MIT study found AI sentiment tools misclassify African American vernacular English at rates up to two and a half times higher than standard English. I address this by using review data as one of three signals, cross-referenced against Census data to ensure the reviewing population reflects the residing population. Second — redlining risk. AI pattern recognition applied to demographic and geographic data can amplify historical disinvestment patterns if we optimize for the wrong signals. My methodology explicitly cross-references opportunity signals against historical disinvestment corridors to distinguish genuine underservice from structural suppression of demand. Third — overreliance. AI surfaces the pattern. Human judgment interprets the cause. That is not a workaround — it is the methodologically correct division of labor. I am not arguing AI replaces expertise. I am arguing it makes expertise more accessible."
-  },
-  {
-    title: "AI Disclosure Statement",
-    pts: "Required — AI Disclosure · Transparency",
-    script: "As required by this course, I am disclosing my AI use transparently. The primary AI tool used in this project is Claude, developed by Anthropic. I used Claude to synthesize demographic and economic research on Kansas City neighborhoods, to assist in structuring the sentiment analysis methodology, and to help identify relevant academic sources in entrepreneurship and AI ethics literature. I also used Claude to build InSight itself — the platform you are watching me use right now. All interpretation and conclusions are my own. I made every analytical judgment about what the data means, what the opportunity signals indicate, and how the ethical concerns should be addressed. Claude processed information and surfaced patterns. I decided what those patterns mean. Limitations I encountered: AI outputs required manual verification against primary sources. Sentiment analysis tools have documented demographic bias that I addressed methodologically. And I remain aware that using AI to research AI introduces a reflexivity I have tried to address honestly rather than obscure."
-  }
+  { title:"Introduction — Setting the Stage", pts:"Clarity & Organization · Research Question & Context",
+    script:"Good afternoon. My name is Walley, and I'm presenting my midterm project proposal for History 488. I want to open by being transparent about something unusual — the tool I'm using to deliver this presentation is the same tool my research project is about. What you're watching right now is InSight: an AI-powered platform I'm building that delivers real-time intelligence to the user. The teleprompter running on this phone, the AI responses I'll use during questions — that's InSight. This project sits at the intersection of artificial intelligence, entrepreneurship, and local economic history. And I want to argue that those three things are not separate domains. They are the same conversation." },
+  { title:"Research Question & Context", pts:"Research Question & Context — 14 points",
+    script:"My central research question is: How can AI-driven analysis of consumer reviews, demographic data, and business location patterns reveal underserved market niches within Kansas City's local economy? This question matters because the problem of entrepreneurial opportunity recognition is not new — it is a historical problem. Entrepreneurs across every era have made high-stakes decisions with incomplete information. What has changed is the scale of available data and the tools to process it. Yelp, Google Maps, and city open data portals now generate enormous volumes of consumer signal that most small business owners never see. AI changes who has access to that signal — and that is an entrepreneurial and historical question worth taking seriously." },
+  { title:"Methodology — Three-Layer AI Analysis", pts:"Thoughtful AI Application · Interdisciplinary Source Integration — 14 pts each",
+    script:"My methodology uses three overlapping layers. First, sentiment analysis of consumer reviews — using AI text classification to identify recurring complaints and gaps in service. Second, keyword clustering — AI models detecting what consumers repeatedly mention as absent in specific corridors. Third, demographic overlay — comparing business density against population growth and income data from the US Census Bureau and Kansas City's open data portal. The power is in triangulation. No single source is reliable alone. When sentiment data, keyword clustering, and demographic trends all point to the same gap — that convergence is meaningful signal. But AI alone cannot determine whether an opportunity is viable. Human judgment remains essential to interpret local context, cultural dynamics, and regulatory factors." },
+  { title:"Kansas City Findings", pts:"Analytical Insight · Interdisciplinary Source Integration",
+    script:"I focused on two Kansas City neighborhoods with contrasting profiles. In Waldo and Brookside — strong community identity, growing population — the data shows a documented gap in specialty food and retail. Over eight hundred Yelp reviews in the corridor cite lack of nearby options. In Crossroads and Midtown — thirty-two hundred residents, median age thirty-two — the supply is skewed toward destination dining. The people who actually live there are underserved on everyday food and accessible retail. Same city. Inverse opportunity profiles. That distinction only becomes visible when you layer sentiment data against demographic data against business density. That is what AI makes possible." },
+  { title:"InSight — The Tool Behind the Research", pts:"Entrepreneurial Innovation Implications · Critical AI Engagement",
+    script:"Here is the meta-layer of this project. The analysis I just described is exactly what InSight is designed to do automatically, for any entrepreneur who needs it. Historically, this type of market intelligence cost tens of thousands of dollars from consulting firms. Less than three percent of small businesses use formal market research before launching — primarily because of cost. InSight changes that access equation. What I ran manually in this project is InSight's first case study. The platform extends further — into field intelligence delivered through smart glasses, so an entrepreneur walking through Waldo sees this data surfaced in real time as they look at storefronts." },
+  { title:"Ethical Reflection & AI Limitations", pts:"Ethical & Methodological Reflection — 14 points",
+    script:"Three ethical concerns I've wrestled with directly. First — review data bias. Online review platforms over-represent younger, more affluent demographics. A 2020 MIT study found AI sentiment tools misclassify African American vernacular English at rates up to two and a half times higher than standard English. I address this by cross-referencing review data against Census demographic data. Second — redlining risk. AI pattern recognition applied to geographic data can amplify historical disinvestment patterns. My methodology cross-references opportunity signals against historical disinvestment corridors. Third — overreliance. AI surfaces the pattern. Human judgment interprets the cause. That is the methodologically correct division of labor." },
+  { title:"AI Disclosure Statement", pts:"Required — AI Disclosure · Transparency",
+    script:"As required by this course, I am disclosing my AI use transparently. The primary AI tool used is Claude, developed by Anthropic. I used Claude to synthesize demographic and economic research on Kansas City neighborhoods, to structure the sentiment analysis methodology, and to help identify relevant academic sources. I also used Claude to build InSight — the platform you are watching me use right now. All interpretation and conclusions are my own. I made every analytical judgment about what the data means. Claude processed information and surfaced patterns. I decided what those patterns mean. Limitations: AI outputs required manual verification. Sentiment tools have documented demographic bias that I addressed methodologically." }
 ];
 
 // ===== QA TOPICS =====
 const QA = [
-  {
-    label: "Where does the data come from?",
-    responses: [
-      { n: 1, short: "Three public sources: consumer review platforms, KC open data portal, and US Census Bureau.", full: "The data comes entirely from public sources — no proprietary access required. First, consumer reviews on Yelp and Google Maps, analyzed for sentiment and recurring themes. Second, Kansas City's open data portal, which publishes business licensing records updated monthly — over forty thousand active records available for free analysis. Third, US Census Bureau datasets covering population trends, income levels, and neighborhood development patterns. The methodological contribution is not accessing better data — it's processing existing public data at a scale that wasn't feasible for individual researchers before AI. The triangulation of three independent public datasets is what generates reliable signal." },
-      { n: 2, short: "The key is triangulation — no single source is reliable alone, but three converging datasets create meaningful signal.", full: "Each data source has documented limitations. Review data skews toward certain demographics. Census data lags by years. Business licensing records don't capture informal economy activity. My methodology addresses this by requiring convergence across all three layers before drawing conclusions. Where all three point to the same gap — high consumer complaint density, low business density, growing population — that convergence is meaningful in a way that no single dataset would support. That is the AI contribution: processing enough data across enough independent sources to identify convergence signals that human analysis would miss at this scale." }
-    ],
-    fact: "Kansas City's open data portal publishes business licensing records updated monthly — over 40,000 active records available for free public analysis.",
-    counter: "If asked 'isn't review data biased?' — Yes, and that's exactly why demographic overlay is the third layer. The methodology accounts for this bias explicitly rather than averaging over it."
-  },
-  {
-    label: "How does this make money?",
-    responses: [
-      { n: 1, short: "InSight monetizes as a subscription — delivering this analysis continuously for any market, not just as a one-time KC report.", full: "The business model operates on two levels. The KC research demonstrates the output — a market intelligence brief that a small business owner, real estate developer, or economic development organization would pay for. Historically, this analysis cost tens of thousands of dollars from consulting firms. AI brings the marginal cost down to a subscription. The broader InSight platform extends this to real-time field intelligence through smart glasses — recurring subscription revenue from professionals who need this intelligence continuously. The institutional market is also significant: economic development offices, community development financial institutions, and university research centers all need neighborhood-level market intelligence and currently pay consultants or go without." },
-      { n: 2, short: "The historical framing actually strengthens the pitch — showing how past entrepreneurial gaps created long-term economic consequences makes the case for proactive data-driven opportunity identification.", full: "This is where the History 488 framework adds genuine value to the business case. Demonstrating historically how underserved neighborhoods in Kansas City experienced compounding disinvestment — because no one had the tools to make the economic case for investment at the right time — strengthens the argument for InSight's proactive approach. The product isn't just useful for entrepreneurs. It's useful for policymakers, community development organizations, and researchers trying to prevent the next generation of disinvestment. That institutional market is willing to pay for tools that make the economic case for equitable investment." }
-    ],
-    fact: "Less than 3% of small businesses use formal market research before launching — primarily due to cost. The US market research industry is valued at over $47 billion annually.",
-    counter: "If asked 'isn't this just Yelp?' — Yelp surfaces existing businesses. InSight identifies where businesses should exist but don't. That forward-looking gap analysis is what no existing consumer platform provides."
-  },
-  {
-    label: "Ethical implications / redlining?",
-    responses: [
-      { n: 1, short: "The risk is real. My methodology addresses it directly — by cross-referencing opportunity signals against historical disinvestment maps.", full: "This is the most important ethical question and I want to answer it carefully. Historic redlining in Kansas City created documented patterns of disinvestment in specific corridors — and an AI system trained on data reflecting those patterns can amplify them rather than correct them. My methodology addresses this in three ways. First, I explicitly cross-reference demographic opportunity signals against historical disinvestment maps to distinguish genuine underservice from areas where investment has been structurally suppressed. Second, I use business density relative to population rather than absolute metrics, which avoids penalizing historically underinvested areas. Third, every AI output requires human contextual interpretation — AI flags the pattern, human judgment interprets the cause and the appropriate response." },
-      { n: 2, short: "There's a counter-argument: AI market analysis done right can actively counter redlining by making the economic case for investment in historically overlooked neighborhoods.", full: "I'd actually invert the framing. The reason redlining persisted for decades is that investment decisions were made on subjective, bias-laden grounds with no systematic data to challenge them. AI market analysis, done responsibly, can make the objective economic case for investing in neighborhoods that have been overlooked — demonstrating documented demand, growing population, and unmet consumer need. The Waldo corridor is a concrete example: the data shows genuine demand signal in a neighborhood that a traditional investor might pass over on subjective grounds. Used correctly, AI doesn't accelerate redlining — it undermines the subjective reasoning that historically allowed it to persist." }
-    ],
-    fact: "A 2018 NCRC study found the economic effects of redlining persist in 61% of formerly redlined neighborhoods across major US cities — including Kansas City's historic corridors.",
-    counter: "If asked 'who decides what counts as underserved?' — The methodology defines underserved as high documented consumer demand signal against low business density — objective, measurable, and auditable. Human judgment determines the response. The AI determines the pattern."
-  },
-  {
-    label: "KC research findings",
-    responses: [
-      { n: 1, short: "Two neighborhoods, inverse opportunity profiles. Waldo has community loyalty and a specialty food gap. Crossroads has foot traffic but underserves its residents.", full: "The Kansas City findings reveal two distinct profiles. Waldo and Brookside — strong community identity, growing population, high neighborhood loyalty, but recent loss of anchor concepts and over eight hundred Yelp reviews citing lack of nearby food and specialty retail. Opportunity score of eighty-seven out of one hundred for community-anchored specialty food or retail. Crossroads and Midtown — thirty-two hundred residents, median age thirty-two, high foot traffic, but supply skewed entirely toward destination dining and nightlife. Residents are underserved on everyday accessible food and retail. Opportunity score of seventy-nine for accessible daily retail concepts. The analytical insight: same city, adjacent areas, but completely inverse opportunity profiles that only emerge when you layer all three data sources together." },
-      { n: 2, short: "The broader KC context matters — food desert expansion along historically redlined corridors creates citywide backdrop for neighborhood-level opportunity identification.", full: "There's a Kansas City macro context that grounds the neighborhood findings. Grocery store closures along corridors historically aligned with redlining patterns have been expanding Kansas City's food desert footprint. This isn't directly in Waldo or Crossroads, but it creates conditions where proximity to everyday food access becomes a genuine competitive differentiator. An entrepreneurial concept that successfully serves everyday food needs in Waldo isn't just filling a market gap — it's filling a civic gap that the city's existing infrastructure has failed to address. That is the kind of historically-grounded entrepreneurial opportunity this course is designed to identify." }
-    ],
-    fact: "Kansas City is among the top 20 US cities with expanding food desert corridors, with closures concentrated in historically redlined neighborhoods per recent reporting.",
-    counter: "If asked about sample size — the methodology doesn't use statistical sampling. It uses full-population public data: every Yelp review in those corridors, every Census record, every business license. AI enables full-population analysis that traditional methods couldn't."
-  },
-  {
-    label: "AI limitations and bias?",
-    responses: [
-      { n: 1, short: "AI is a pattern detector, not a decision-maker. Every output requires human contextual interpretation — that division of labor is by design.", full: "I want to be intellectually honest about what AI can and cannot do here. AI excels at processing large volumes of data and identifying statistical patterns — it surfaces signals that human researchers would miss due to volume alone. But AI cannot evaluate local cultural dynamics, regulatory context, the specific history of a neighborhood block, or whether a pattern reflects genuine unmet demand versus structural suppression of demand. My methodology explicitly preserves human judgment at every interpretation stage. AI generates the signal. I interpret the cause. That is not a limitation to apologize for — it is the methodologically correct approach, and it's consistent with what the course asks us to reflect on." },
-      { n: 2, short: "Review data specifically introduces documented demographic bias — my methodology cross-references against Census data to address it explicitly.", full: "The most significant bias risk in this methodology is review data skew. A 2020 MIT study found that AI sentiment analysis tools misclassify text from African American vernacular English at rates up to two and a half times higher than standard American English — a documented bias with direct implications for any consumer review analysis. I address this by using review data as one of three signals, requiring convergence with Census demographic data and business licensing records before drawing conclusions. Where review signal and demographic data diverge — suggesting the reviewing population doesn't reflect the residing population — I flag that divergence explicitly rather than averaging over it. Transparency about bias is built into the methodology, not added as a footnote." }
-    ],
-    fact: "MIT 2020: AI sentiment analysis tools misclassify African American vernacular English at rates up to 2.5x higher than standard American English — a documented bias directly relevant to consumer review analysis.",
-    counter: "If asked 'can AI replace local expertise?' — It doesn't replace it. It prepares you for it. InSight surfaces the data pattern. The entrepreneur who grew up in Waldo knows whether that pattern reflects real opportunity. The combination is more powerful than either alone."
-  },
-  {
-    label: "Why this vs existing tools?",
-    responses: [
-      { n: 1, short: "Existing tools index what exists. InSight identifies where businesses should exist but don't. That forward-looking gap analysis is the entire value proposition.", full: "Yelp, Google Maps, and even sophisticated market research platforms are fundamentally backward-looking — they index and analyze what already exists. InSight is designed to be forward-looking. By combining consumer complaint clustering, demographic trend analysis, and business density mapping, it identifies gaps — places where demand exists, population is growing, and supply hasn't responded. No existing consumer tool does this. Traditional market research firms do versions of this, but at costs that exclude the small business owners and entrepreneurs who need it most. InSight brings that capability to anyone — which is both an entrepreneurial opportunity and an equity argument." },
-      { n: 2, short: "The field intelligence layer is what makes InSight genuinely novel — taking this analysis from a dashboard into the physical environment in real time.", full: "The KC research represents InSight's dashboard layer — analysis you run before you go into the field. What makes InSight architecturally different is the field layer: an entrepreneur walks through Waldo wearing smart glasses, and the analysis I just presented surfaces in real time as they look at storefronts. They see a vacant building and InSight surfaces consumer demand data for that block, demographic trends for that corridor, nearest competitor distance. That bridges the gap between data and lived experience in a way no existing tool addresses. The research you do at a desk and the judgment you exercise in the field become one continuous intelligence layer." }
-    ],
-    fact: "IBISWorld estimates the US market research industry at $47.6 billion annually. Less than 3% of small businesses use formal market research before launching — primarily due to cost.",
-    counter: "If asked 'won't this just benefit outside investors over community?' — This is worth taking seriously. The tool is neutral — it identifies gaps. Whether those gaps are filled in ways that serve existing communities or displace them is a human and policy decision. InSight can serve community development organizations preventing displacement just as well as outside investors."
-  },
-  {
-    label: "AI Disclosure Statement",
-    responses: [
-      { n: 1, short: "Primary tool: Claude by Anthropic. Used for research synthesis, methodology structuring, and building InSight itself. All interpretation is my own.", full: "As required by History 488, I'm disclosing my AI use transparently. The primary AI tool I used is Claude, developed by Anthropic. I used Claude to synthesize demographic and economic research on Kansas City neighborhoods, to structure the three-layer sentiment analysis methodology, to identify relevant academic sources in entrepreneurship and AI ethics, and to build the InSight platform you're watching me use right now. All interpretation and conclusions are my own. I made every analytical judgment about what the data means, what the opportunity signals indicate, and how the ethical concerns should be addressed. Claude processed information and surfaced patterns. I decided what those patterns mean. Limitations encountered: AI outputs required manual verification. Sentiment tools have documented demographic bias I addressed methodologically. Using AI to research AI introduces a reflexivity I've tried to address honestly." }
-    ],
-    fact: "HISTORY 488 policy: AI use is permitted. Interpretation and conclusions must be the student's own. Undisclosed AI use is treated as a course integrity violation.",
-    counter: "If questioned on AI use — the course explicitly permits generative AI as a tool. The disclosure requirement is about transparency, not restriction. I am being fully transparent about what Claude did and what I did."
-  }
+  { label:"Where does the data come from?", responses:[
+    { n:1, short:"Three public sources: consumer reviews, KC open data portal, and US Census Bureau.", full:"The data comes entirely from public sources. First, consumer reviews on Yelp and Google Maps, analyzed for sentiment and recurring themes. Second, Kansas City's open data portal, which publishes business licensing records — over forty thousand active records available for free. Third, US Census Bureau datasets covering population trends and income levels. The methodological contribution is not accessing better data — it's processing existing public data at a scale that wasn't feasible before AI. Triangulation across three independent sources is what generates reliable signal." },
+    { n:2, short:"The key is triangulation — no single source reliable alone, but three converging datasets create meaningful signal.", full:"Each source has documented limitations. Review data skews toward certain demographics. Census data lags by years. Business records don't capture the informal economy. My methodology requires convergence across all three layers before drawing conclusions. Where all three point to the same gap — high consumer complaint density, low business density, growing population — that convergence is meaningful in a way no single dataset supports. That is the AI contribution: identifying convergence signals at scale." }
+  ], fact:"Kansas City's open data portal publishes business licensing records updated monthly — over 40,000 active records available for free public analysis.", counter:"If asked 'isn't review data biased?' — Yes, and that's exactly why demographic overlay is the third layer. The methodology accounts for this bias explicitly." },
+  { label:"How does this make money?", responses:[
+    { n:1, short:"InSight monetizes as a subscription — delivering this analysis continuously, not just as a one-time report.", full:"The business model operates on two levels. The KC research demonstrates the output — a market intelligence brief that a small business owner, real estate developer, or economic development organization would pay for. Historically this analysis cost tens of thousands from consulting firms. AI brings the cost down to a subscription. The broader InSight platform extends this to real-time field intelligence through smart glasses — recurring subscription revenue from professionals who need this intelligence continuously." },
+    { n:2, short:"There's also an institutional market — economic development organizations, city planning departments, and CDFIs.", full:"Beyond individual entrepreneurs, the institutional market is significant. Kansas City's economic development office, community development financial institutions, and university research centers all need neighborhood-level market intelligence and currently pay consultants or go without. InSight can serve that market at a fraction of the cost and update the analysis continuously. The historical framing strengthens that pitch — showing how past entrepreneurial gaps created long-term economic consequences makes the case for proactive data-driven opportunity identification." }
+  ], fact:"Less than 3% of small businesses use formal market research before launching — primarily due to cost. The US market research industry is valued at over $47 billion annually.", counter:"If asked 'isn't this just Yelp?' — Yelp surfaces existing businesses. InSight identifies where businesses should exist but don't. That forward-looking gap analysis is what no existing platform provides." },
+  { label:"Ethical implications / redlining?", responses:[
+    { n:1, short:"The risk is real and my methodology addresses it directly — cross-referencing against historical disinvestment maps.", full:"This is the most important ethical question. Historic redlining in Kansas City created documented patterns of disinvestment — and an AI system trained on data reflecting those patterns can amplify them. My methodology addresses this three ways. First, I cross-reference opportunity signals against historical disinvestment maps to distinguish genuine underservice from structural suppression. Second, I use business density relative to population rather than absolute metrics. Third, every AI output requires human contextual interpretation — AI flags the pattern, human judgment interprets the cause." },
+    { n:2, short:"Counter-argument: AI market analysis done right can actively counter redlining by making the economic case for overlooked neighborhoods.", full:"I'd invert the framing. Redlining persisted because investment decisions were made on subjective, bias-laden grounds with no systematic data to challenge them. AI market analysis, done responsibly, can make the objective economic case for investing in neighborhoods that have been overlooked — demonstrating documented demand, growing population, and unmet need. The Waldo corridor is a concrete example: the data shows genuine demand signal in a neighborhood a traditional investor might pass over. Used correctly, AI undermines the subjective reasoning that historically allowed redlining to persist." }
+  ], fact:"A 2018 NCRC study found the economic effects of redlining persist in 61% of formerly redlined neighborhoods across major US cities — including Kansas City.", counter:"If asked 'who decides what counts as underserved?' — The methodology defines it as high documented demand signal against low business density — objective and auditable. Human judgment determines the response." },
+  { label:"KC research findings", responses:[
+    { n:1, short:"Two neighborhoods, inverse profiles. Waldo has loyalty and a food gap. Crossroads has foot traffic but underserves residents.", full:"Waldo and Brookside — strong community identity, growing population, high loyalty — over eight hundred Yelp reviews citing lack of nearby food and specialty retail. Opportunity score eighty-seven out of one hundred. Crossroads and Midtown — thirty-two hundred residents, median age thirty-two, high foot traffic — supply skewed toward destination dining. Residents underserved on everyday accessible food and retail. Opportunity score seventy-nine. Same city, adjacent areas, inverse profiles that only emerge when you layer all three data sources." },
+    { n:2, short:"The KC macro context matters — food desert expansion along historically redlined corridors creates citywide backdrop.", full:"Grocery store closures along corridors historically aligned with redlining have been expanding Kansas City's food desert footprint. This creates conditions where proximity to everyday food access becomes a genuine competitive differentiator. An entrepreneurial concept that serves everyday food needs in Waldo isn't just filling a market gap — it's filling a civic gap the city's existing infrastructure has failed to address. That is the kind of historically-grounded entrepreneurial opportunity this course is designed to identify." }
+  ], fact:"Kansas City is among the top 20 US cities with expanding food desert corridors, with closures concentrated in historically redlined neighborhoods.", counter:"If asked about sample size — the methodology uses full-population public data, not statistical sampling. AI enables full-population analysis that traditional methods couldn't." },
+  { label:"AI limitations and bias?", responses:[
+    { n:1, short:"AI is a pattern detector, not a decision-maker. Human contextual interpretation is required at every stage — by design.", full:"AI excels at processing large volumes of data and identifying statistical patterns. But AI cannot evaluate local cultural dynamics, regulatory context, or whether a pattern reflects genuine unmet demand versus structural suppression. My methodology explicitly preserves human judgment at every interpretation stage. AI generates the signal. I interpret the cause. That is not a limitation to apologize for — it is the methodologically correct approach consistent with what this course asks us to reflect on." },
+    { n:2, short:"Review data introduces documented demographic bias — my methodology cross-references against Census data to address it explicitly.", full:"The most significant bias risk is review data skew. A 2020 MIT study found that AI sentiment tools misclassify African American vernacular English at rates up to two and a half times higher than standard English. I address this by using review data as one of three signals, requiring convergence with Census demographic data before drawing conclusions. Where review signal and demographic data diverge — suggesting the reviewing population doesn't reflect the residing population — I flag that divergence explicitly rather than averaging over it." }
+  ], fact:"MIT 2020: AI sentiment analysis misclassifies African American vernacular English at rates up to 2.5x higher than standard American English.", counter:"If asked 'can AI replace local expertise?' — It doesn't replace it. It prepares you for it. InSight surfaces the data pattern. The person who grew up in Waldo knows whether that pattern reflects real opportunity. Together they're more powerful." },
+  { label:"Why this vs existing tools?", responses:[
+    { n:1, short:"Existing tools index what exists. InSight identifies where businesses should exist but don't — that gap is the entire value proposition.", full:"Yelp, Google Maps, and even sophisticated market research platforms are fundamentally backward-looking — they index what already exists. InSight is forward-looking. By combining consumer complaint clustering, demographic trend analysis, and business density mapping, it identifies gaps where demand exists, population is growing, and supply hasn't responded. No existing consumer tool does this. Traditional market research firms do versions of this, but at costs that exclude the small business owners who need it most." },
+    { n:2, short:"The field intelligence layer is what makes InSight genuinely novel — taking this analysis from a dashboard into the physical environment.", full:"The KC research represents InSight's dashboard layer — analysis you run before going into the field. What makes InSight architecturally different is the field layer: an entrepreneur walks through Waldo wearing smart glasses, and the analysis surfaces in real time as they look at storefronts. They see a vacant building and InSight surfaces demand data for that block, demographic trends for that corridor, nearest competitor distance. The research you do at a desk and the judgment you exercise in the field become one continuous intelligence layer." }
+  ], fact:"IBISWorld: US market research industry valued at $47.6 billion annually. Less than 3% of small businesses use formal market research before launching.", counter:"If asked 'won't this benefit gentrification over community?' — The tool identifies gaps. Whether those gaps are filled in ways that serve or displace existing communities is a human and policy decision. InSight can serve community development organizations just as well as outside investors." },
+  { label:"AI Disclosure Statement", responses:[
+    { n:1, short:"Primary tool: Claude by Anthropic. Used for research synthesis, methodology structuring, and building InSight. All interpretation is my own.", full:"As required by History 488, I'm disclosing my AI use transparently. The primary tool is Claude by Anthropic. I used Claude to synthesize demographic and economic research on Kansas City neighborhoods, to structure the three-layer methodology, to identify relevant academic sources, and to build the InSight platform you're watching me use right now. All interpretation and conclusions are my own. I made every analytical judgment. Claude processed information and surfaced patterns. I decided what those patterns mean. Limitations: outputs required manual verification. Sentiment tools have documented demographic bias I addressed methodologically." }
+  ], fact:"HISTORY 488 policy: AI use is permitted. Interpretation and conclusions must be the student's own. Undisclosed AI use is a course integrity violation.", counter:"If questioned on AI use — the course explicitly permits generative AI as a tool. The disclosure requirement is about transparency, not restriction. I am being fully transparent." }
 ];
 
 // ===== STATE =====
-let si = 0, wi = 0, autoOn = true, autoTimer = null, offScript = false;
-let WORDS = [], listening = false, recognition = null;
-let curTopic = null, respWords = [], respIdx = 0, respTimer = null;
-let dwellIv = null, wakeTO = null, speed = 420;
+let si=0, wi=0, autoOn=false, autoTimer=null, offScript=false;
+let WORDS=[], wordEls=[];
+let listening=false, recognition=null;
+let curTopic=null, roWords=[], roIdx=0, roAutoOn=false, roTimer=null, roSpeed=800;
+let dwellIv=null, wakeTO=null, speed=800;
 
-function updateSpeed(v) {
-  speed = parseInt(v);
-  const labels = {150:'Very Fast', 250:'Fast', 420:'Normal', 600:'Slow', 800:'Very Slow'};
-  const closest = Object.keys(labels).reduce((a,b) => Math.abs(b-v)<Math.abs(a-v)?b:a);
-  document.getElementById('speed-val').textContent = labels[closest] || 'Custom';
-  if (autoOn) startAuto();
+// ===== SPEED =====
+function updateSpeed(v){
+  speed=parseInt(v);
+  document.getElementById('speed-val').textContent=speedLabel(speed);
+  if(autoOn) startAuto();
+}
+function updateRoSpeed(v){
+  roSpeed=parseInt(v);
+  document.getElementById('ro-speed-val').textContent=speedLabel(roSpeed);
+  if(roAutoOn) startRoAuto();
+}
+function speedLabel(v){
+  const m=[[300,'Fastest'],[500,'Fast'],[800,'Normal'],[1200,'Slow'],[1800,'Slowest']];
+  return m.reduce((a,b)=>Math.abs(b[0]-v)<Math.abs(a[0]-v)?b:a)[1];
 }
 
-function loadSlide(i) {
-  si = i; const s = SLIDES[i];
-  WORDS = s.script.split(/\s+/).filter(Boolean);
-  wi = 0; offScript = false;
-  document.getElementById('slide-title').textContent = s.title;
-  document.getElementById('slide-pts').textContent = s.pts;
-  document.getElementById('slide-counter').textContent = `${i + 1} / ${SLIDES.length}`;
-  renderDots(); renderPrompt(); startAuto();
+// ===== BUILD STATIC SCRIPT =====
+function buildScript(){
+  const container=document.getElementById('script-text');
+  container.innerHTML='';
+  wordEls=[];
+  WORDS.forEach((w,i)=>{
+    const sp=document.createElement('span');
+    sp.className='sw upcoming';
+    sp.textContent=w+' ';
+    sp.onclick=()=>jumpTo(i);
+    container.appendChild(sp);
+    wordEls.push(sp);
+  });
+  updateWordStyles();
+  // scroll to top
+  document.getElementById('script-zone').scrollTop=0;
+  updateProgBar();
 }
-function renderDots() {
-  const el = document.getElementById('sdots'); el.innerHTML = '';
-  SLIDES.forEach((_, i) => { const d = document.createElement('div'); d.className = 'sdot' + (i === si ? ' active' : i < si ? ' done' : ''); d.onclick = () => loadSlide(i); el.appendChild(d); });
-}
-function renderPrompt() {
-  // show more words — past words fade behind, current highlighted, future words fade ahead
-  const behind = 12, ahead = 30;
-  const start = Math.max(0, wi - behind);
-  const end = Math.min(WORDS.length, wi + ahead);
-  let h = '';
-  if (start > 0) h += '<span class="w-done" style="opacity:0.1">… </span>';
-  for (let i = start; i < end; i++) {
-    const dist = i - wi;
-    if (i < wi) {
-      // words already spoken — fade out progressively
-      const opacity = Math.max(0.08, 0.22 - (wi - i) * 0.025);
-      h += `<span class="w-done" style="opacity:${opacity.toFixed(2)}">${WORDS[i]} </span>`;
-    } else if (i === wi) {
-      // current word — bright and highlighted
-      h += `<span class="${offScript ? 'w-off' : 'w-cur'}">${WORDS[i]} </span>`;
+
+function updateWordStyles(){
+  wordEls.forEach((el,i)=>{
+    el.className='sw';
+    if(i<wi){
+      el.classList.add('done');
+    } else if(i===wi){
+      el.classList.add('cur');
+      if(offScript) el.classList.add('offscript');
     } else {
-      // upcoming words — fade in progressively
-      const opacity = Math.max(0.15, 0.75 - dist * 0.04);
-      h += `<span class="w-next" style="opacity:${opacity.toFixed(2)}">${WORDS[i]} </span>`;
+      el.classList.add('upcoming');
     }
-  }
-  document.getElementById('pz-text').innerHTML = h;
-  const pct = (wi / Math.max(1, WORDS.length - 1)) * 100;
-  document.getElementById('prog-f').style.width = pct + '%';
-  document.getElementById('prog-thumb').style.left = pct + '%';
+  });
 }
 
-// swipe navigation — restricted to prompter zone only
-function initSwipe() {
-  const zone = document.getElementById('prompter-zone');
-  let startX = 0, startY = 0, startWi = 0, swiping = false;
-  zone.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    startWi = wi; swiping = false;
-  }, { passive: true });
-  zone.addEventListener('touchmove', e => {
-    const dx = e.touches[0].clientX - startX;
-    const dy = Math.abs(e.touches[0].clientY - startY);
-    if (!swiping && dy > Math.abs(dx)) return;
-    swiping = true;
-    const delta = Math.round(-dx / 10);
-    wi = Math.max(0, Math.min(WORDS.length - 1, startWi + delta));
-    renderPrompt();
-  }, { passive: true });
-  zone.addEventListener('touchend', () => { startWi = wi; swiping = false; }, { passive: true });
-}
-function startAuto() { clearInterval(autoTimer); if (autoOn) autoTimer = setInterval(() => { if (!offScript && wi < WORDS.length - 1) { wi++; renderPrompt(); } }, speed); }
-function stopAuto() { clearInterval(autoTimer); }
-function toggleAuto() { autoOn = !autoOn; document.getElementById('auto-btn').textContent = autoOn ? '⏸' : '▶'; autoOn ? startAuto() : stopAuto(); }
-function nextSlide() { if (si < SLIDES.length - 1) loadSlide(si + 1); }
-function prevSlide() { if (si > 0) loadSlide(si - 1); }
-
-function initProgressBar() {
-  const bar = document.getElementById('prog-bar');
-  if (!bar) return;
-  function scrub(e) {
-    const rect = bar.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    const pct = Math.max(0, Math.min(1, x / rect.width));
-    wi = Math.round(pct * (WORDS.length - 1));
-    renderPrompt();
-  }
-  bar.addEventListener('touchstart', scrub, { passive: true });
-  bar.addEventListener('touchmove', scrub, { passive: true });
-  bar.addEventListener('mousedown', scrub);
-  bar.addEventListener('mousemove', e => { if (e.buttons === 1) scrub(e); });
+function scrollToCurrent(){
+  if(!wordEls[wi]) return;
+  const zone=document.getElementById('script-zone');
+  const wordRect=wordEls[wi].getBoundingClientRect();
+  const zoneRect=zone.getBoundingClientRect();
+  const relTop=wordRect.top-zoneRect.top+zone.scrollTop;
+  const target=relTop-(zoneRect.height*0.35);
+  zone.scrollTo({top:Math.max(0,target),behavior:'smooth'});
 }
 
-function initSwipe() {
-  const zone = document.getElementById('prompter-zone');
-  if (!zone) return;
-  let startX = 0, startY = 0, startWi = 0, swiping = false;
-  zone.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    startWi = wi; swiping = false;
-  }, { passive: true });
-  zone.addEventListener('touchmove', e => {
-    const dx = e.touches[0].clientX - startX;
-    const dy = Math.abs(e.touches[0].clientY - startY);
-    if (!swiping && dy > Math.abs(dx)) return;
-    swiping = true;
-    const delta = Math.round(-dx / 10);
-    wi = Math.max(0, Math.min(WORDS.length - 1, startWi + delta));
-    renderPrompt();
-  }, { passive: true });
-  zone.addEventListener('touchend', () => { startWi = wi; swiping = false; }, { passive: true });
+function updateProgBar(){
+  const pct=(wi/Math.max(1,WORDS.length-1))*100;
+  const pf=document.getElementById('prog-fill');
+  const pt=document.getElementById('prog-thumb');
+  if(pf) pf.style.width=pct+'%';
+  if(pt) pt.style.left=pct+'%';
 }
 
-function toggleListen() { listening ? stopListen() : startListen(); }
-function startListen() {
-  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) { alert('Use Safari on iPhone.'); return; }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
-  recognition.onresult = e => {
-    // use interim results for real-time tracking — don't wait for pause
-    let interim = '', final = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
-      else interim += e.results[i][0].transcript + ' ';
+function jumpTo(i){
+  wi=Math.max(0,Math.min(WORDS.length-1,i));
+  updateWordStyles();
+  updateProgBar();
+}
+
+// ===== AUTO SCROLL =====
+function startAuto(){ clearInterval(autoTimer); if(autoOn) autoTimer=setInterval(()=>{ if(!offScript&&wi<WORDS.length-1){wi++;updateWordStyles();updateProgBar();scrollToCurrent();} },speed); }
+function stopAuto(){ clearInterval(autoTimer); autoTimer=null; }
+function toggleAuto(){
+  autoOn=!autoOn;
+  document.getElementById('auto-btn').textContent=autoOn?'⏸ Pause':'▶ Start';
+  autoOn?startAuto():stopAuto();
+}
+
+// ===== SLIDE MANAGEMENT =====
+function loadSlide(i){
+  si=i; const s=SLIDES[i];
+  WORDS=s.script.split(/\s+/).filter(Boolean);
+  wi=0; offScript=false; autoOn=false;
+  stopAuto();
+  document.getElementById('auto-btn').textContent='▶ Start';
+  document.getElementById('slide-title').textContent=s.title;
+  document.getElementById('slide-pts').textContent=s.pts;
+  document.getElementById('slide-counter').textContent=`${i+1} / ${SLIDES.length}`;
+  renderDots();
+  buildScript();
+}
+function renderDots(){
+  const el=document.getElementById('sdots'); el.innerHTML='';
+  SLIDES.forEach((_,i)=>{ const d=document.createElement('div'); d.className='sdot'+(i===si?' active':i<si?' done':''); d.onclick=()=>loadSlide(i); el.appendChild(d); });
+}
+function nextSlide(){ if(si<SLIDES.length-1) loadSlide(si+1); }
+function prevSlide(){ if(si>0) loadSlide(si-1); }
+
+// ===== VOICE MATCHING =====
+function toggleListen(){ listening?stopListen():startListen(); }
+function startListen(){
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){ alert('Use Safari on iPhone.'); return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR(); recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';
+  recognition.onresult=e=>{
+    let interim='',final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=e.results[i][0].transcript+' ';
+      else interim+=e.results[i][0].transcript+' ';
     }
-    // match on interim first for live tracking, fall back to final
-    const text = interim || final;
-    if (text.trim()) {
-      const ind = document.getElementById('mic-ind');
+    const text=interim||final;
+    if(text.trim()){
+      const ind=document.getElementById('mic-ind');
       ind.classList.add('hearing');
-      setTimeout(() => ind.classList.remove('hearing'), 400);
+      setTimeout(()=>ind.classList.remove('hearing'),400);
       matchScript(text);
     }
-    if (final) checkWake(final);
+    if(final) checkWake(final);
   };
-  recognition.onerror = () => stopListen();
-  recognition.onend = () => { if (listening) recognition.start(); };
-  recognition.start(); listening = true;
-  document.getElementById('mic-ind').classList.add('active');
-  document.getElementById('mic-ind').textContent = '🎙';
-  ['mic-btn', 'qa-mic'].forEach(id => { const b = document.getElementById(id); if (b) { b.textContent = '⏹'; b.classList.add('live'); } });
+  recognition.onerror=()=>stopListen();
+  recognition.onend=()=>{ if(listening) recognition.start(); };
+  recognition.start(); listening=true;
+  document.getElementById('mic-ind').classList.add('on');
+  ['mic-btn','qa-mic'].forEach(id=>{ const b=document.getElementById(id); if(b){b.textContent='⏹ Stop';b.classList.add('live');} });
 }
-function stopListen() {
-  recognition?.stop(); listening = false;
-  document.getElementById('mic-ind').classList.remove('active','hearing');
-  ['mic-btn', 'qa-mic'].forEach(id => { const b = document.getElementById(id); if (b) { b.textContent = id === 'mic-btn' ? '🎙 Mic' : '🎙 Listen'; b.classList.remove('live'); } });
+function stopListen(){
+  recognition?.stop(); listening=false;
+  document.getElementById('mic-ind').classList.remove('on','hearing');
+  ['mic-btn','qa-mic'].forEach(id=>{ const b=document.getElementById(id); if(b){b.textContent=id==='mic-btn'?'🎙 Mic':'🎙 Listen';b.classList.remove('live');} });
 }
-function matchScript(text) {
-  const sw = text.trim().split(/\s+/).filter(Boolean), strip = s => s.replace(/[^a-z0-9]/g, '').toLowerCase();
-  let idx = wi, matched = false;
-  for (const w of sw) { for (let i = idx; i < Math.min(idx + 10, WORDS.length); i++) { if (strip(WORDS[i]) === strip(w)) { idx = i + 1; matched = true; break; } } }
-  if (matched) { wi = idx; offScript = false; renderPrompt(); }
-  else { offScript = true; renderPrompt(); setTimeout(() => { offScript = false; renderPrompt(); }, 2500); }
-}
-function checkWake(text) {
-  if (text.toLowerCase().includes('insight reveal') || text.toLowerCase().includes('insight activate')) {
-    const t = document.getElementById('wake-toast'); t.classList.remove('hide');
-    clearTimeout(wakeTO); wakeTO = setTimeout(() => t.classList.add('hide'), 2500);
-    setTimeout(goQA, 700);
+
+function matchScript(text){
+  const sw=text.trim().split(/\s+/).filter(Boolean);
+  const strip=s=>s.replace(/[^a-z0-9]/g,'').toLowerCase();
+  let idx=wi, matched=false;
+  for(const w of sw){
+    for(let i=idx;i<Math.min(idx+12,WORDS.length);i++){
+      if(strip(WORDS[i])===strip(w)){idx=i+1;matched=true;break;}
+    }
+  }
+  if(matched){
+    wi=Math.min(idx,WORDS.length-1); offScript=false;
+    updateWordStyles(); updateProgBar(); scrollToCurrent();
+  } else {
+    offScript=true; updateWordStyles();
+    setTimeout(()=>{ offScript=false; updateWordStyles(); },2500);
   }
 }
 
-function startPresentation() {
-  document.getElementById('home').style.display = 'none';
+function checkWake(text){
+  if(text.toLowerCase().includes('insight reveal')||text.toLowerCase().includes('insight activate')){
+    const t=document.getElementById('wake-toast'); t.classList.remove('hide');
+    clearTimeout(wakeTO); wakeTO=setTimeout(()=>t.classList.add('hide'),2500);
+    setTimeout(goQA,700);
+  }
+}
+
+// ===== PROGRESS BAR SCRUB =====
+function initProgressBar(){
+  const bar=document.getElementById('prog-wrap'); if(!bar) return;
+  function scrub(e){
+    const rect=bar.getBoundingClientRect();
+    const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+    const pct=Math.max(0,Math.min(1,x/rect.width));
+    wi=Math.round(pct*(WORDS.length-1));
+    updateWordStyles(); updateProgBar(); scrollToCurrent();
+  }
+  bar.addEventListener('touchstart',scrub,{passive:true});
+  bar.addEventListener('touchmove',scrub,{passive:true});
+  bar.addEventListener('mousedown',scrub);
+  bar.addEventListener('mousemove',e=>{ if(e.buttons===1) scrub(e); });
+}
+
+// ===== SWIPE on script zone =====
+function initSwipe(){
+  const zone=document.getElementById('script-zone'); if(!zone) return;
+  let startX=0,startY=0,startWi=0,swiping=false;
+  zone.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; startY=e.touches[0].clientY; startWi=wi; swiping=false; },{passive:true});
+  zone.addEventListener('touchmove',e=>{
+    const dx=e.touches[0].clientX-startX;
+    const dy=Math.abs(e.touches[0].clientY-startY);
+    if(!swiping&&dy>Math.abs(dx)) return;
+    swiping=true;
+    const delta=Math.round(-dx/12);
+    wi=Math.max(0,Math.min(WORDS.length-1,startWi+delta));
+    updateWordStyles(); updateProgBar();
+  },{passive:true});
+  zone.addEventListener('touchend',()=>{ startWi=wi; swiping=false; },{passive:true});
+}
+
+// ===== VIEW SWITCHING =====
+function startPresentation(){
+  document.getElementById('home').style.display='none';
   document.getElementById('app').classList.add('active');
-  show('tp-view'); hide('qa-view'); setPill('SPEAKING', 'pu');
+  show('tp-view'); hide('qa-view'); setPill('SPEAKING','pu');
   loadSlide(0);
   initProgressBar();
   initSwipe();
 }
-function goQA() {
-  document.getElementById('home').style.display = 'none';
+function goQA(){
+  document.getElementById('home').style.display='none';
   document.getElementById('app').classList.add('active');
-  show('qa-view'); hide('tp-view'); setPill('Q&A', 'cy');
+  show('qa-view'); hide('tp-view'); setPill('Q&A','cy');
 }
-function backToScript() { show('tp-view'); hide('qa-view'); setPill('SPEAKING', 'pu'); startAuto(); }
-function goHome() { stopAuto(); stopListen(); document.getElementById('app').classList.remove('active'); document.getElementById('home').style.display = 'flex'; hide('tp-view'); hide('qa-view'); }
-function show(id) { document.getElementById(id).classList.add('active'); }
-function hide(id) { document.getElementById(id).classList.remove('active'); }
-function setPill(txt, c) {
-  const p = document.getElementById('mode-pill'); p.textContent = txt;
-  const m = { pu: ['rgba(124,58,237,0.12)', 'rgba(124,58,237,0.25)', '#a78bfa'], cy: ['rgba(6,182,212,0.12)', 'rgba(6,182,212,0.25)', '#06b6d4'], gr: ['rgba(34,197,94,0.1)', 'rgba(34,197,94,0.25)', '#22c55e'] };
-  const [bg, bc, col] = m[c] || m.pu;
-  p.style.background = bg; p.style.borderColor = bc; p.style.color = col;
+function backToScript(){ show('tp-view'); hide('qa-view'); setPill('SPEAKING','pu'); }
+function goHome(){ stopAuto(); stopListen(); document.getElementById('app').classList.remove('active'); document.getElementById('home').style.display='flex'; hide('tp-view'); hide('qa-view'); }
+function show(id){ document.getElementById(id).classList.add('active'); }
+function hide(id){ document.getElementById(id).classList.remove('active'); }
+function setPill(txt,c){
+  const p=document.getElementById('mode-pill'); p.textContent=txt;
+  const m={pu:['rgba(124,58,237,0.12)','rgba(124,58,237,0.25)','#a78bfa'],cy:['rgba(6,182,212,0.12)','rgba(6,182,212,0.25)','#06b6d4'],gr:['rgba(34,197,94,0.1)','rgba(34,197,94,0.25)','#22c55e']};
+  const[bg,bc,col]=m[c]||m.pu;
+  p.style.background=bg; p.style.borderColor=bc; p.style.color=col;
 }
 
-function loadTopic(i) {
-  curTopic = QA[i];
-  const cs = document.getElementById('qa-scroll');
-  cs.innerHTML = '';
-  curTopic.responses.forEach((r, j) => {
-    const card = document.createElement('div'); card.className = 'resp-card'; card.id = 'rc' + j;
-    card.innerHTML = `<div class="rc-num">OPTION ${r.n}</div><div class="rc-short">${r.short}</div><div class="rc-hint">Tap to load full response →</div><div class="dwell-bar" id="db${j}"></div>`;
-    card.style.animation = `fadeup .3s ease ${j * 0.08}s forwards`; card.style.opacity = '0';
-    card.addEventListener('click', () => selectResp(j));
-    card.addEventListener('touchstart', () => startDwell(j), { passive: true });
-    card.addEventListener('touchend', () => clearDwell(), { passive: true });
+// ===== QA =====
+function loadTopic(i){
+  curTopic=QA[i];
+  const cs=document.getElementById('qa-scroll');
+  cs.innerHTML='';
+  curTopic.responses.forEach((r,j)=>{
+    const card=document.createElement('div'); card.className='resp-card'; card.id='rc'+j;
+    card.innerHTML=`<div class="rc-num">OPTION ${r.n}</div><div class="rc-short">${r.short}</div><div class="rc-hint">Tap to load as teleprompter →</div><div class="dwell-bar" id="db${j}"></div>`;
+    card.style.animation=`fadeup .3s ease ${j*0.08}s forwards`; card.style.opacity='0';
+    card.addEventListener('click',()=>selectResp(j));
+    card.addEventListener('touchstart',()=>startDwell(j),{passive:true});
+    card.addEventListener('touchend',()=>clearDwell(),{passive:true});
     cs.appendChild(card);
   });
-  const fc = document.createElement('div'); fc.className = 'fact-card';
-  fc.innerHTML = `<div class="fc-tag">◆ Live Fact</div><div class="fc-txt">${curTopic.fact}</div>`;
-  fc.style.animation = 'fadeup .3s ease .2s forwards'; fc.style.opacity = '0'; cs.appendChild(fc);
-  const cc = document.createElement('div'); cc.className = 'ctr-card';
-  cc.innerHTML = `<div class="ct-tag">⚔ Anticipate</div><div class="ct-txt">${curTopic.counter}</div>`;
-  cc.style.animation = 'fadeup .3s ease .3s forwards'; cc.style.opacity = '0'; cs.appendChild(cc);
+  const fc=document.createElement('div'); fc.className='fact-card';
+  fc.innerHTML=`<div class="fc-tag">◆ Live Fact</div><div class="fc-txt">${curTopic.fact}</div>`;
+  fc.style.animation='fadeup .3s ease .2s forwards'; fc.style.opacity='0'; cs.appendChild(fc);
+  const cc=document.createElement('div'); cc.className='ctr-card';
+  cc.innerHTML=`<div class="ct-tag">⚔ Anticipate</div><div class="ct-txt">${curTopic.counter}</div>`;
+  cc.style.animation='fadeup .3s ease .3s forwards'; cc.style.opacity='0'; cs.appendChild(cc);
 }
-function selectResp(i) {
+
+function selectResp(i){
   clearDwell();
-  document.querySelectorAll('.resp-card').forEach((c, j) => { c.classList.toggle('sel', j === i); c.classList.toggle('faded', j !== i); });
+  document.querySelectorAll('.resp-card').forEach((c,j)=>{ c.classList.toggle('sel',j===i); c.classList.toggle('faded',j!==i); });
   loadRespOverlay(curTopic.responses[i].full);
 }
-function loadRespOverlay(text) {
-  respWords = text.split(/\s+/).filter(Boolean); respIdx = 0;
+
+// ===== RESPONSE OVERLAY — teleprompter style =====
+function loadRespOverlay(text){
+  roWords=text.split(/\s+/).filter(Boolean);
+  roIdx=0; roAutoOn=false;
+  document.getElementById('ro-auto-btn').textContent='▶ Start';
+  document.getElementById('ro-done').textContent='';
+  buildRoScript();
   document.getElementById('resp-ov').classList.remove('hide');
-  document.getElementById('ro-done').textContent = '';
-  setPill('RESPONDING', 'gr');
-  function render() {
-    const vis = 9, start = Math.max(0, respIdx - 2), end = Math.min(respWords.length, start + vis);
-    let h = '';
-    if (start > 0) h += '<span class="rw-done">… </span>';
-    for (let k = start; k < end; k++) {
-      if (k < respIdx) h += `<span class="rw-done">${respWords[k]} </span>`;
-      else if (k === respIdx) h += `<span class="rw-cur">${respWords[k]} </span>`;
-      else h += `<span class="rw-next">${respWords[k]} </span>`;
+  setPill('RESPONDING','gr');
+  // init progress bar scrub for response
+  const bar=document.getElementById('ro-prog-wrap');
+  bar.onmousedown=bar.ontouchstart=function(e){
+    function scrub(ev){
+      const rect=bar.getBoundingClientRect();
+      const x=(ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left;
+      const pct=Math.max(0,Math.min(1,x/rect.width));
+      roIdx=Math.round(pct*(roWords.length-1));
+      updateRoStyles(); updateRoProg();
     }
-    document.getElementById('ro-text').innerHTML = h;
-    document.getElementById('ro-prog-f').style.width = ((respIdx / respWords.length) * 100) + '%';
-  }
-  render(); clearInterval(respTimer);
-  respTimer = setInterval(() => {
-    if (respIdx < respWords.length - 1) { respIdx++; render(); }
-    else { clearInterval(respTimer); document.getElementById('ro-done').textContent = 'Complete — tap Dismiss to return'; setPill('Q&A', 'cy'); }
-  }, 420);
+    scrub(e);
+    bar.ontouchmove=scrub; bar.onmousemove=ev=>{ if(ev.buttons===1) scrub(ev); };
+  };
 }
-function dismissResp() { clearInterval(respTimer); document.getElementById('resp-ov').classList.add('hide'); setPill('Q&A', 'cy'); }
-function clearQA() {
-  const cs = document.getElementById('qa-scroll'); cs.innerHTML = '';
-  const idle = document.getElementById('qa-idle');
-  if (!idle.parentElement) cs.appendChild(idle);
-  idle.style.display = 'flex';
+
+function buildRoScript(){
+  const container=document.getElementById('ro-text');
+  container.innerHTML='';
+  roWords.forEach((w,i)=>{
+    const sp=document.createElement('span'); sp.className='rw upcoming';
+    sp.textContent=w+' '; sp.onclick=()=>{ roIdx=i; updateRoStyles(); updateRoProg(); };
+    container.appendChild(sp);
+  });
+  updateRoStyles(); updateRoProg();
 }
-function startDwell(i) {
-  clearDwell(); const bar = document.getElementById('db' + i); if (!bar) return;
-  let p = 0; dwellIv = setInterval(() => { p += 2; bar.style.width = p + '%'; if (p >= 100) { clearDwell(); selectResp(i); } }, 20);
+
+function updateRoStyles(){
+  const spans=document.getElementById('ro-text').querySelectorAll('.rw');
+  spans.forEach((el,i)=>{
+    el.className='rw';
+    if(i<roIdx) el.classList.add('done');
+    else if(i===roIdx) el.classList.add('cur');
+    else el.classList.add('upcoming');
+  });
 }
-function clearDwell() { clearInterval(dwellIv); dwellIv = null; document.querySelectorAll('.dwell-bar').forEach(b => b.style.width = '0%'); }
+
+function updateRoProg(){
+  const pct=(roIdx/Math.max(1,roWords.length-1))*100;
+  const pf=document.getElementById('ro-prog-fill');
+  const pt=document.getElementById('ro-prog-thumb');
+  if(pf) pf.style.width=pct+'%';
+  if(pt) pt.style.left=pct+'%';
+}
+
+function startRoAuto(){ clearInterval(roTimer); if(roAutoOn) roTimer=setInterval(()=>{ if(roIdx<roWords.length-1){roIdx++;updateRoStyles();updateRoProg();} else {clearInterval(roTimer);document.getElementById('ro-done').textContent='Complete — tap Dismiss to return';setPill('Q&A','cy');} },roSpeed); }
+function stopRoAuto(){ clearInterval(roTimer); }
+function toggleRoAuto(){
+  roAutoOn=!roAutoOn;
+  document.getElementById('ro-auto-btn').textContent=roAutoOn?'⏸ Pause':'▶ Start';
+  roAutoOn?startRoAuto():stopRoAuto();
+}
+function dismissResp(){ stopRoAuto(); document.getElementById('resp-ov').classList.add('hide'); setPill('Q&A','cy'); }
+
+function clearQA(){
+  const cs=document.getElementById('qa-scroll'); cs.innerHTML='';
+  const idle=document.getElementById('qa-idle'); if(idle) cs.appendChild(idle);
+}
+
+function startDwell(i){ clearDwell(); const bar=document.getElementById('db'+i); if(!bar) return; let p=0; dwellIv=setInterval(()=>{ p+=2; bar.style.width=p+'%'; if(p>=100){clearDwell();selectResp(i);} },20); }
+function clearDwell(){ clearInterval(dwellIv); dwellIv=null; document.querySelectorAll('.dwell-bar').forEach(b=>b.style.width='0%'); }
 </script>
 </body>
 </html>
