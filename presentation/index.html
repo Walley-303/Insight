@@ -291,7 +291,7 @@ input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;height:4p
 <script>
 var SLIDES = [
   { title:"Introduction", pts:"Clarity and Organization · Research Question and Context",
-    script:"Good afternoon. My name is Walley and I am presenting my midterm project proposal for History 488. I want to open by being transparent about something unusual. The tool I am using to deliver this presentation is the same tool my research project is about. What you are watching right now is InSight, an AI powered platform I am building that delivers real time intelligence to the user. The teleprompter running on this screen, the AI responses I will use during questions, that is InSight. This project sits at the intersection of artificial intelligence, entrepreneurship, and local economic history. And I want to argue that those three things are not separate domains. They are the same conversation." },
+    script:"Good afternoon. My name is Walley and this is my AI capstone presentation. I want to open by being transparent about something unusual. The tool I am using to deliver this presentation is the same tool my research project is about. What you are watching right now is InSight, an AI powered platform I am building that delivers real time intelligence to the user. The teleprompter running on this screen, the AI responses I will use during questions, that is InSight. This project sits at the intersection of artificial intelligence, entrepreneurship, and local economic history. And I want to argue that those three things are not separate domains. They are the same conversation." },
   { title:"Research Question and Context", pts:"Research Question and Context — 14 points",
     script:"My central research question is this. How can AI driven analysis of consumer reviews, demographic data, and business location patterns reveal underserved market niches within Kansas City's local economy? This question matters because the problem of entrepreneurial opportunity recognition is not new, it is a historical problem. Entrepreneurs across every era have made high stakes decisions with incomplete information. What has changed is the scale of available data and the tools to process it. Yelp, Google Maps, and city open data portals now generate enormous volumes of consumer signal that most small business owners never see. AI changes who has access to that signal, and that is an entrepreneurial and historical question worth taking seriously." },
   { title:"Methodology — Three-Layer AI Analysis", pts:"Thoughtful AI Application · Interdisciplinary Source Integration — 14 points each",
@@ -366,6 +366,18 @@ var listening=false, recognition=null;
 var curTopic=null, roWords=[], roIdx=0, roAutoOn=false, roTimer=null, roSpeed=800;
 var speed=800, dwellIv=null, wakeTO=null;
 var liveTranscript='', liveAITimer=null, lastAIText='';
+var voiceActive=false, voiceSilenceTimer=null, voiceScrollTimer=null;
+
+function startVoiceScroll(){
+  clearInterval(voiceScrollTimer);
+  voiceScrollTimer=setInterval(function(){
+    if(voiceActive && !autoOn){
+      // voice-activity mode: advance one word while speaking
+      if(wi<WORDS.length-1){ wi++; updateWordStyles(); updateProgBar(); scrollToCurrent(); }
+    }
+  }, speed);
+}
+function stopVoiceScroll(){ clearInterval(voiceScrollTimer); }
 
 function sliderToMs(v){ return Math.round(1800 - (v-1)/99*(1800-300)); }
 function speedLabel(ms){
@@ -450,7 +462,7 @@ function startListen(){
   recognition.continuous=true;
   recognition.interimResults=true;
   recognition.lang='en-US';
-  recognition.onstart=function(){ setMicStatus(true,false); };
+  recognition.onstart=function(){ setMicStatus(true,false); startVoiceScroll(); };
   recognition.onresult=function(e){
     var interim='',final='';
     for(var i=e.resultIndex;i<e.results.length;i++){
@@ -460,13 +472,18 @@ function startListen(){
     var text=interim||final;
     if(text.trim()){
       setMicStatus(true,true);
-      setTimeout(function(){ if(listening) setMicStatus(true,false); },500);
+      // voice-activity scroll — if speaking, keep advancing
+      voiceActive=true;
+      clearTimeout(voiceSilenceTimer);
+      voiceSilenceTimer=setTimeout(function(){
+        voiceActive=false;
+        setMicStatus(true,false);
+      },800);
       var ovOpen=!document.getElementById('resp-ov').classList.contains('hide');
       var qaActive=document.getElementById('qa-view').classList.contains('active');
       var tpActive=document.getElementById('tp-view').classList.contains('active');
-      if(ovOpen){
-        matchRoScript(text);
-      } else if(qaActive){
+      if(ovOpen){ matchRoScript(text); }
+      else if(qaActive){
         if(final){
           liveTranscript+=final;
           var el=document.getElementById('qa-transcript-txt');
@@ -476,6 +493,7 @@ function startListen(){
           scheduleLiveAI();
         }
       } else if(tpActive){
+        // try word match first, fall back to voice-activity scroll
         matchScript(text);
       }
     }
@@ -489,7 +507,9 @@ function startListen(){
 }
 
 function stopListen(){
-  listening=false;
+  listening=false; voiceActive=false;
+  stopVoiceScroll();
+  clearTimeout(voiceSilenceTimer);
   if(recognition){ try{recognition.stop();}catch(e){} recognition=null; }
   setMicStatus(false,false);
   updateMicBtns(false);
