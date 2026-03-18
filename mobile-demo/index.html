@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>InSight Mobile</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --pu:#7c3aed;--pul:#a78bfa;--cy:#06b6d4;--gr:#22c55e;
+  --am:#f59e0b;--re:#ef4444;--bg:#06060f;--b1:rgba(255,255,255,0.08);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);}
+body{font-family:'Inter',sans-serif;color:#e8e8f0;display:flex;flex-direction:column;}
+
+/* SETUP SCREEN */
+#setup-screen{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:20px;}
+.setup-logo{font-size:36px;font-weight:900;background:linear-gradient(135deg,#fff 30%,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.setup-tag{font-size:12px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.setup-card{background:rgba(255,255,255,0.04);border:1px solid var(--b1);border-radius:14px;padding:20px;width:100%;max-width:400px;}
+.setup-label{font-size:11px;color:#a78bfa;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:600;}
+#script-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--b1);border-radius:8px;color:#ddd;font-size:14px;padding:12px;resize:none;outline:none;font-family:inherit;line-height:1.7;height:140px;}
+#script-input:focus{border-color:rgba(124,58,237,0.4);}
+.setup-btn{width:100%;max-width:400px;background:var(--pu);color:#fff;border:none;padding:16px;border-radius:10px;font-weight:700;font-size:16px;cursor:pointer;font-family:inherit;box-shadow:0 0 30px rgba(124,58,237,0.3);}
+.setup-hint{font-size:12px;color:#333;text-align:center;max-width:320px;line-height:1.7;}
+
+/* MAIN APP — LANDSCAPE */
+#app{display:none;height:100%;flex-direction:column;}
+#app.active{display:flex;}
+
+/* TOP STATUS */
+.app-bar{background:rgba(0,0,0,0.7);border-bottom:1px solid var(--b1);padding:6px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;backdrop-filter:blur(10px);}
+.app-logo{font-size:13px;font-weight:800;background:linear-gradient(135deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.app-status{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.a-dot{width:5px;height:5px;border-radius:50%;}
+.a-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);}
+.mode-pill{background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);color:#a78bfa;font-size:9px;border-radius:100px;padding:2px 8px;letter-spacing:1px;text-transform:uppercase;font-weight:600;}
+.mic-btn{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);color:var(--gr);border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:600;transition:all .2s;}
+.mic-btn.listening{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.35);color:var(--re);}
+
+/* DUAL PANEL */
+.panels{flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;gap:0;}
+.panel-divider{width:1px;background:rgba(255,255,255,0.06);flex-shrink:0;}
+
+/* LEFT — TELEPROMPTER */
+.left-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#0a0a18,#060610);}
+.left-vignette{position:absolute;inset:0;background:radial-gradient(ellipse 85% 80% at 50% 50%,transparent 50%,rgba(0,0,8,0.65) 100%);pointer-events:none;}
+.left-scanline{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(100,140,255,0.08),transparent);animation:scan 8s linear infinite;pointer-events:none;}
+.corner{position:absolute;width:10px;height:10px;border-color:rgba(100,150,255,0.3);border-style:solid;}
+.corner.tl{top:6px;left:6px;border-width:1px 0 0 1px;}
+.corner.tr{top:6px;right:6px;border-width:1px 1px 0 0;}
+.corner.bl{bottom:6px;left:6px;border-width:0 0 1px 1px;}
+.corner.br{bottom:6px;right:6px;border-width:0 1px 1px 0;}
+.left-status{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:2px 10px;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.ls-dot{width:4px;height:4px;border-radius:50%;}
+
+/* prompter text */
+.prompter-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;text-align:center;}
+.p-label{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(120,160,255,0.3);margin-bottom:10px;}
+.p-text{font-size:clamp(12px,3.5vw,22px);line-height:1.9;font-weight:400;}
+.w-done{color:rgba(255,255,255,0.18);}
+.w-cur{color:#fff;font-weight:600;background:rgba(100,140,255,0.22);border-radius:3px;padding:0 3px;}
+.w-next{color:rgba(255,255,255,0.65);}
+.w-off{color:var(--am);font-weight:600;background:rgba(245,158,11,0.13);border-radius:3px;padding:0 3px;text-decoration:underline;text-underline-offset:2px;}
+.prog{height:1px;background:rgba(255,255,255,0.05);border-radius:1px;margin-top:10px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,rgba(100,140,255,0.4),rgba(6,182,212,0.4));border-radius:1px;transition:width .4s;}
+
+/* response active on left */
+.resp-active{position:absolute;bottom:12%;left:50%;transform:translateX(-50%);width:88%;background:rgba(0,6,20,0.8);border:1px solid rgba(100,200,130,0.3);border-radius:10px;padding:10px 13px;backdrop-filter:blur(12px);transition:opacity .4s,transform .4s;}
+.resp-active.hide{opacity:0;transform:translateX(-50%) translateY(8px);pointer-events:none;}
+.ra-tag{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(100,200,130,0.6);margin-bottom:4px;}
+.ra-text{font-size:clamp(10px,2.5vw,14px);color:rgba(200,240,210,0.88);line-height:1.65;}
+
+/* wake word indicator */
+.wake-indicator{position:absolute;bottom:6%;left:50%;transform:translateX(-50%);background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:100px;padding:3px 12px;font-size:9px;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;transition:opacity .4s;white-space:nowrap;}
+.wake-indicator.hide{opacity:0;}
+
+/* RIGHT — AI PANEL */
+.right-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#080810,#05050e);display:flex;flex-direction:column;}
+.right-vignette{position:absolute;inset:0;background:radial-gradient(ellipse 85% 80% at 50% 50%,transparent 50%,rgba(0,0,8,0.65) 100%);pointer-events:none;z-index:1;}
+.right-status{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:2px 10px;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);white-space:nowrap;display:flex;align-items:center;gap:6px;z-index:2;}
+
+/* response cards */
+.cards-scroll{position:absolute;top:28px;bottom:0;left:0;right:0;overflow-y:auto;padding:8px 10px 12px;display:flex;flex-direction:column;gap:7px;z-index:2;-webkit-overflow-scrolling:touch;}
+.cards-scroll::-webkit-scrollbar{display:none;}
+.ai-idle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:rgba(255,255,255,0.12);font-size:clamp(10px,2vw,13px);line-height:1.9;z-index:2;pointer-events:none;}
+.r-card{background:rgba(0,6,24,0.75);border:1px solid rgba(100,150,255,0.18);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;flex-shrink:0;}
+.r-card:hover,.r-card:active{border-color:rgba(100,150,255,0.5);background:rgba(20,40,100,0.6);transform:scale(0.98);}
+.r-card.selected{border-color:rgba(100,200,130,0.4);background:rgba(0,30,15,0.6);}
+.r-card.faded{opacity:0.35;}
+.rc-num{font-size:7px;color:rgba(6,182,212,0.55);font-weight:600;letter-spacing:1.5px;margin-bottom:3px;}
+.rc-text{font-size:clamp(9px,2vw,12px);color:rgba(200,220,255,0.82);line-height:1.55;}
+.rc-hint{font-size:8px;color:rgba(255,255,255,0.2);margin-top:5px;}
+.dwell-bar{position:absolute;bottom:0;left:0;height:2px;background:rgba(100,200,130,0.6);width:0%;transition:width linear;}
+
+/* fact/counter cards */
+.fact-card{background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.18);border-radius:8px;padding:8px 10px;flex-shrink:0;}
+.fc-tag{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(6,182,212,0.6);margin-bottom:3px;font-weight:600;}
+.fc-text{font-size:clamp(8px,1.8vw,11px);color:rgba(180,220,255,0.75);line-height:1.6;}
+.counter-card{background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.18);border-radius:8px;padding:8px 10px;flex-shrink:0;}
+.cc-tag{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,158,11,0.6);margin-bottom:3px;font-weight:600;}
+.cc-text{font-size:clamp(8px,1.8vw,11px);color:rgba(255,220,150,0.75);line-height:1.6;}
+
+/* BOTTOM BAR */
+.bottom-bar{background:rgba(0,0,0,0.7);border-top:1px solid var(--b1);padding:6px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;backdrop-filter:blur(10px);}
+.bb-btn{background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:rgba(255,255,255,0.55);border-radius:6px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap;}
+.bb-btn:hover,.bb-btn:active{background:rgba(255,255,255,0.1);color:#fff;}
+.bb-btn.primary{background:rgba(124,58,237,0.2);border-color:rgba(124,58,237,0.35);color:#a78bfa;font-weight:600;}
+.bb-btn.danger{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:var(--re);}
+.progress-txt{font-size:9px;color:#333;margin-left:auto;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes scan{0%{top:0;}100%{top:101%;}}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-logo">InSight</div>
+  <div class="setup-tag">Mobile Demo · Presentation Mode</div>
+  <div class="setup-card">
+    <div class="setup-label">Your Script</div>
+    <textarea id="script-input" placeholder="Paste your presentation script here — InSight will track your voice and scroll word by word as you speak…"></textarea>
+  </div>
+  <button class="setup-btn" onclick="launchApp()">Launch InSight →</button>
+  <div class="setup-hint">Hold phone in landscape. Left side = teleprompter. Right side = AI assist. Say "InSight" to trigger AI at any time.</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <!-- APP BAR -->
+  <div class="app-bar">
+    <div class="app-logo">InSight</div>
+    <div class="mode-pill" id="mode-pill">SPEAKING</div>
+    <div class="app-status">
+      <div class="a-dot" style="background:var(--gr);box-shadow:0 0 5px var(--gr);animation:pulse 2s infinite"></div>
+      <div class="a-lbl">LIVE</div>
+    </div>
+    <button class="mic-btn" id="mic-btn" onclick="toggleListen()">🎙 Listen</button>
+  </div>
+
+  <!-- PANELS -->
+  <div class="panels">
+
+    <!-- LEFT: TELEPROMPTER -->
+    <div class="left-panel" id="left-panel" onclick="handleLeftTap()">
+      <div class="left-vignette"></div>
+      <div class="left-scanline"></div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="left-status">
+        <div class="ls-dot" id="ls-dot" style="background:var(--gr);box-shadow:0 0 5px var(--gr);animation:pulse 2s infinite"></div>
+        <span id="ls-lbl">ON SCRIPT</span>
+      </div>
+      <div class="prompter-wrap">
+        <div class="p-label">— teleprompter —</div>
+        <div class="p-text" id="p-text"></div>
+        <div class="prog"><div class="prog-fill" id="prog-fill"></div></div>
+      </div>
+      <div class="resp-active hide" id="resp-active">
+        <div class="ra-tag">▶ Selected response</div>
+        <div class="ra-text" id="ra-text"></div>
+      </div>
+      <div class="wake-indicator hide" id="wake-ind">"InSight" detected · AI activating…</div>
+    </div>
+
+    <div class="panel-divider"></div>
+
+    <!-- RIGHT: AI PANEL -->
+    <div class="right-panel" id="right-panel">
+      <div class="right-vignette"></div>
+      <div class="right-status">
+        <div class="ls-dot" style="background:var(--cy);box-shadow:0 0 5px var(--cy);animation:pulse 2s infinite"></div>
+        <span id="rs-lbl">AI READY</span>
+      </div>
+      <div class="cards-scroll" id="cards-scroll">
+        <div class="ai-idle" id="ai-idle">
+          Say "InSight" or<br/>tap Listen to activate<br/><br/>
+          <span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.08)">Tap any card to load response</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <button class="bb-btn primary" onclick="triggerAI()">⚡ InSight</button>
+    <button class="bb-btn" onclick="nudge(-1)">◀</button>
+    <button class="bb-btn" onclick="nudge(1)">▶</button>
+    <button class="bb-btn" onclick="toggleAuto()" id="auto-btn">⏸ Pause</button>
+    <button class="bb-btn" onclick="simulateQ()">🎙 Sim Q</button>
+    <button class="bb-btn danger" onclick="resetAll()">↺</button>
+    <div class="progress-txt" id="prog-txt"></div>
+  </div>
+</div>
+
+<script>
+const DEFAULT = "Good evening. Thank you for joining us tonight. I'm Walley, CEO and Co-Founder of InSight Technologies. What you're holding — or what I'm holding right now — is a preview of where we're headed. InSight is an AI-powered smart glasses platform that gives the wearer an invisible co-pilot. A voice-matched teleprompter. Live AI response assistance. Gaze-driven selection. Scholar research tools. And field intelligence for sales, insurance, and retail. All without anyone knowing you're using it. Tonight I want to show you what that looks like — and then open the floor for questions.";
+
+let WORDS = [];
+let cur = 0, autoOn = true, autoTimer = null, offScript = false;
+let listening = false, recognition = null;
+let fullTranscript = '';
+let respWords = [], respIdx = 0, respTimer = null, respActive = false;
+let wakeTimeout = null;
+
+const AI_QA = [
+  {
+    q: "How does it work without anyone noticing?",
+    responses: [
+      { num: 1, short: "InSight looks like premium eyeglasses — no glow, no screen visible to others.", full: "InSight is designed to look indistinguishable from a pair of premium eyeglasses. The AR display is only visible to the wearer — there's no outward glow, no screen, and no visible indicator. The wireless remote looks like a standard presentation clicker. To everyone else, you're simply the most prepared person in the room." },
+      { num: 2, short: "The HUD is projected directly onto the inside of the lens — invisible from the outside.", full: "The display uses waveguide AR technology — the same type used in high-end military heads-up displays. The image is projected directly onto the inside surface of the lens at an angle that only the wearer can see. From any external angle, the lenses look completely normal." }
+    ],
+    fact: "Waveguide AR optics have been used in military aviation HUDs since the 1970s — the same technology, now miniaturized to eyeglass form.",
+    counter: "Anticipate: 'Isn't this cheating?' → Counter: A surgeon using imaging assistance isn't cheating — they're better prepared. InSight is a tool for informed decision-making."
+  },
+  {
+    q: "What about battery life and real-world use?",
+    responses: [
+      { num: 1, short: "Up to 8 hours of combined use on a single charge — enough for a full workday.", full: "InSight is designed for all-day wear. On a full charge, you get up to 8 hours of combined teleprompter and AI assist use. The glasses charge via USB-C and reach full charge in approximately 45 minutes. The wireless remote runs for up to 6 months on a standard battery." },
+      { num: 2, short: "The glasses weigh just 38 grams — lighter than most premium sunglasses.", full: "At 38 grams, InSight is lighter than most premium sunglasses. The titanium alloy frame keeps weight minimal while maintaining durability. Battery and processing components are distributed across the temple arms to keep the frame balanced and comfortable for extended wear." }
+    ],
+    fact: "The average smartphone weighs 170–200 grams. InSight at 38 grams is lighter than a standard AirPods case.",
+    counter: "Anticipate: 'What if the battery dies mid-presentation?' → Counter: The teleprompter caches locally and works offline. Core features never require a live connection."
+  },
+  {
+    q: "How does the AI know what to say?",
+    responses: [
+      { num: 1, short: "Claude AI by Anthropic pulls live web data to ground every suggestion in current facts.", full: "InSight is powered by Claude — Anthropic's AI model — with real-time web search enabled. When a question is detected, Claude analyzes the context, pulls current data from the web, and generates response options grounded in live information. This means your responses are always accurate, never outdated." },
+      { num: 2, short: "The AI listens to the conversation and generates options in under 800 milliseconds.", full: "The system processes incoming audio in real time. When a question or challenge is detected, the AI generates multiple response strategies — including suggested talking points, supporting facts, and anticipated counter-arguments — in under 800 milliseconds end to end. You see the options on your right lens and select by gaze or remote." }
+    ],
+    fact: "Claude by Anthropic processes context and retrieves live web data in under 800ms end-to-end on current hardware.",
+    counter: "Anticipate: 'What if the AI is wrong?' → Counter: InSight presents options, not commands. The human always makes the final call — the AI is an advisor, not an autopilot."
+  }
+];
+
+let aiIdx = 0;
+let currentResponses = [];
+let dwellTimer = null, dwellInterval = null, dwellCardIdx = -1;
+
+function launchApp() {
+  const txt = document.getElementById('script-input').value.trim() || DEFAULT;
+  WORDS = txt.split(/\s+/).filter(Boolean);
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  renderPrompter();
+  startAuto();
+  // lock to landscape hint
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(() => {});
+  }
+}
+
+function renderPrompter() {
+  const vis = 14, start = Math.max(0, cur - 3), end = Math.min(WORDS.length, start + vis);
+  let h = '';
+  if (start > 0) h += '<span class="w-done">… </span>';
+  for (let i = start; i < end; i++) {
+    if (i < cur) h += `<span class="w-done">${WORDS[i]} </span>`;
+    else if (i === cur) h += `<span class="${offScript ? 'w-off' : 'w-cur'}">${WORDS[i]} </span>`;
+    else h += `<span class="w-next">${WORDS[i]} </span>`;
+  }
+  document.getElementById('p-text').innerHTML = h;
+  document.getElementById('prog-fill').style.width = ((cur / Math.max(1, WORDS.length)) * 100) + '%';
+  document.getElementById('prog-txt').textContent = `${cur + 1} / ${WORDS.length}`;
+}
+
+function startAuto() { clearInterval(autoTimer); if (autoOn && !respActive) autoTimer = setInterval(() => { if (!offScript && cur < WORDS.length - 1) { cur++; renderPrompter(); } }, 420); }
+function stopAuto() { clearInterval(autoTimer); autoTimer = null; }
+function toggleAuto() { autoOn = !autoOn; document.getElementById('auto-btn').textContent = autoOn ? '⏸ Pause' : '▶ Resume'; autoOn ? startAuto() : stopAuto(); }
+function nudge(d) { cur = Math.max(0, Math.min(WORDS.length - 1, cur + d)); renderPrompter(); }
+function handleLeftTap() { if (!respActive) nudge(1); }
+
+function resetAll() {
+  stopAuto(); cur = 0; offScript = false; autoOn = true; respActive = false;
+  document.getElementById('auto-btn').textContent = '⏸ Pause';
+  document.getElementById('resp-active').classList.add('hide');
+  clearCards();
+  renderPrompter(); startAuto();
+  setModePill('SPEAKING');
+}
+
+// LISTEN
+function toggleListen() {
+  listening ? stopListen() : startListen();
+}
+
+function startListen() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('Use Chrome or Safari for speech recognition.');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  recognition.onresult = e => {
+    let fin = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) fin += e.results[i][0].transcript + ' ';
+    }
+    if (fin) {
+      fullTranscript += fin;
+      matchScript(fin);
+      checkWakeWord(fin);
+    }
+  };
+  recognition.onerror = () => stopListen();
+  recognition.onend = () => { if (listening) recognition.start(); };
+  recognition.start();
+  listening = true;
+  const btn = document.getElementById('mic-btn');
+  btn.textContent = '⏹ Stop';
+  btn.classList.add('listening');
+  document.querySelector('.a-dot').style.background = 'var(--re)';
+  document.querySelector('.a-dot').style.boxShadow = '0 0 5px var(--re)';
+}
+
+function stopListen() {
+  recognition?.stop();
+  listening = false;
+  const btn = document.getElementById('mic-btn');
+  btn.textContent = '🎙 Listen';
+  btn.classList.remove('listening');
+  document.querySelector('.a-dot').style.background = 'var(--gr)';
+  document.querySelector('.a-dot').style.boxShadow = '0 0 5px var(--gr)';
+}
+
+function matchScript(text) {
+  const sw = text.trim().split(/\s+/).filter(Boolean);
+  const strip = s => s.replace(/[^a-z0-9]/g, '').toLowerCase();
+  let idx = cur, matched = false;
+  for (const w of sw) {
+    for (let i = idx; i < Math.min(idx + 12, WORDS.length); i++) {
+      if (strip(WORDS[i]) === strip(w)) { idx = i + 1; matched = true; break; }
+    }
+  }
+  if (matched) { cur = idx; offScript = false; renderPrompter(); }
+  else { offScript = true; renderPrompter(); setTimeout(() => { offScript = false; renderPrompter(); }, 2500); }
+}
+
+function checkWakeWord(text) {
+  // only trigger wake word in Q&A mode, not during scripted presentation
+  const pill = document.getElementById('mode-pill').textContent;
+  if (pill === 'Q&A' || pill === 'SPEAKING') {
+    if (text.toLowerCase().includes('insight reveal') || text.toLowerCase().includes('insight activate')) {
+      showWakeIndicator();
+      setTimeout(() => triggerAI(), 600);
+    }
+  }
+}
+
+function showWakeIndicator() {
+  const wi = document.getElementById('wake-ind');
+  wi.classList.remove('hide');
+  clearTimeout(wakeTimeout);
+  wakeTimeout = setTimeout(() => wi.classList.add('hide'), 2500);
+}
+
+// AI ASSIST
+function triggerAI() {
+  const q = AI_QA[aiIdx % AI_QA.length];
+  aiIdx++;
+  showAICards(q);
+  setModePill('Q&A');
+}
+
+function simulateQ() {
+  triggerAI();
+}
+
+function showAICards(q) {
+  const cs = document.getElementById('cards-scroll');
+  document.getElementById('ai-idle').style.display = 'none';
+  cs.innerHTML = '';
+  currentResponses = q.responses;
+
+  q.responses.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'r-card';
+    card.id = 'rcard-' + i;
+    card.innerHTML = `<div class="rc-num">OPTION ${r.num}</div><div class="rc-text">${r.short}</div><div class="rc-hint">Tap to load → left lens</div><div class="dwell-bar" id="dwell-${i}"></div>`;
+    card.addEventListener('click', () => selectCard(i));
+    card.addEventListener('touchstart', () => startDwell(i), { passive: true });
+    card.addEventListener('touchend', () => clearDwell(), { passive: true });
+    cs.appendChild(card);
+    card.style.animation = `fadeup .3s ease ${i * 0.1}s forwards`;
+    card.style.opacity = '0';
+  });
+
+  // fact
+  const fc = document.createElement('div');
+  fc.className = 'fact-card';
+  fc.innerHTML = `<div class="fc-tag">◆ Live Fact</div><div class="fc-text">${q.fact}</div>`;
+  fc.style.animation = 'fadeup .3s ease 0.25s forwards';
+  fc.style.opacity = '0';
+  cs.appendChild(fc);
+
+  // counter
+  const cc = document.createElement('div');
+  cc.className = 'counter-card';
+  cc.innerHTML = `<div class="cc-tag">⚔ Anticipate</div><div class="cc-text">${q.counter}</div>`;
+  cc.style.animation = 'fadeup .3s ease 0.35s forwards';
+  cc.style.opacity = '0';
+  cs.appendChild(cc);
+
+  document.getElementById('rs-lbl').textContent = 'Q DETECTED';
+}
+
+function selectCard(i) {
+  clearDwell();
+  document.querySelectorAll('.r-card').forEach((c, j) => {
+    c.classList.toggle('selected', j === i);
+    c.classList.toggle('faded', j !== i);
+  });
+  const r = currentResponses[i];
+  loadResponseLeft(r.full);
+}
+
+function loadResponseLeft(text) {
+  respActive = true;
+  stopAuto();
+  respWords = text.split(/\s+/).filter(Boolean);
+  respIdx = 0;
+
+  const ra = document.getElementById('resp-active');
+  ra.classList.remove('hide');
+  document.getElementById('ls-lbl').textContent = 'RESPONSE ACTIVE';
+  document.getElementById('ls-dot').style.background = 'var(--gr)';
+
+  // hide main prompter
+  document.getElementById('p-text').style.opacity = '0';
+
+  function renderResp() {
+    const vis = 14, start = Math.max(0, respIdx - 3), end = Math.min(respWords.length, start + vis);
+    let h = '';
+    if (start > 0) h += '<span style="color:rgba(255,255,255,0.2)">… </span>';
+    for (let k = start; k < end; k++) {
+      if (k < respIdx) h += `<span style="color:rgba(255,255,255,0.2)">${respWords[k]} </span>`;
+      else if (k === respIdx) h += `<span style="color:#fff;font-weight:600;background:rgba(100,200,130,0.2);border-radius:3px;padding:0 3px">${respWords[k]} </span>`;
+      else h += `<span style="color:rgba(200,240,210,0.7)">${respWords[k]} </span>`;
+    }
+    document.getElementById('ra-text').innerHTML = h;
+    document.getElementById('prog-fill').style.width = ((respIdx / respWords.length) * 100) + '%';
+  }
+  renderResp();
+
+  respTimer = setInterval(() => {
+    if (respIdx < respWords.length - 1) { respIdx++; renderResp(); }
+    else {
+      clearInterval(respTimer);
+      setTimeout(() => {
+        ra.classList.add('hide');
+        document.getElementById('p-text').style.opacity = '1';
+        document.getElementById('ls-lbl').textContent = 'ON SCRIPT';
+        respActive = false;
+        setModePill('SPEAKING');
+        clearCards();
+        startAuto();
+        renderPrompter();
+      }, 1500);
+    }
+  }, 420);
+}
+
+function clearCards() {
+  const cs = document.getElementById('cards-scroll');
+  cs.innerHTML = '';
+  document.getElementById('ai-idle').style.display = 'block';
+  document.getElementById('rs-lbl').textContent = 'AI READY';
+}
+
+function startDwell(i) {
+  clearDwell();
+  const bar = document.getElementById('dwell-' + i);
+  if (!bar) return;
+  let pct = 0;
+  dwellInterval = setInterval(() => {
+    pct += 2; bar.style.width = pct + '%';
+    if (pct >= 100) { clearDwell(); selectCard(i); }
+  }, 20);
+}
+
+function clearDwell() {
+  clearInterval(dwellInterval); dwellInterval = null;
+  document.querySelectorAll('.dwell-bar').forEach(b => b.style.width = '0%');
+}
+
+function setModePill(txt) {
+  const p = document.getElementById('mode-pill');
+  p.textContent = txt;
+  p.style.background = txt === 'Q&A' ? 'rgba(6,182,212,0.15)' : txt === 'RESPONSE ACTIVE' ? 'rgba(34,197,94,0.15)' : 'rgba(124,58,237,0.15)';
+  p.style.borderColor = txt === 'Q&A' ? 'rgba(6,182,212,0.3)' : txt === 'RESPONSE ACTIVE' ? 'rgba(34,197,94,0.3)' : 'rgba(124,58,237,0.3)';
+  p.style.color = txt === 'Q&A' ? 'var(--cy)' : txt === 'RESPONSE ACTIVE' ? 'var(--gr)' : '#a78bfa';
+}
+
+// pre-fill default script
+document.getElementById('script-input').value = DEFAULT;
+</script>
+</body>
+</html>
