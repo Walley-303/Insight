@@ -49,9 +49,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',s
 .slide-head{padding:8px 16px;background:rgba(124,58,237,0.07);border-bottom:1px solid rgba(124,58,237,0.12);flex-shrink:0;}
 .slide-title{font-size:11px;font-weight:700;color:#a78bfa;letter-spacing:.5px;text-transform:uppercase;}
 .slide-pts{font-size:9px;color:rgba(124,58,237,0.5);margin-top:2px;font-weight:600;letter-spacing:.5px;}
-.prompter-zone{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 18px;position:relative;overflow:hidden;}
-.pz-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(124,58,237,0.04),transparent);}
-.pz-text{font-size:clamp(14px,4vw,20px);line-height:2;text-align:center;position:relative;z-index:1;width:100%;}
+.prompter-zone{flex:1;position:relative;overflow:hidden;padding:0;}
+.pz-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(124,58,237,0.04),transparent);pointer-events:none;z-index:0;}
+/* fade masks top and bottom */
+.pz-bg::before{content:'';position:absolute;top:0;left:0;right:0;height:28%;background:linear-gradient(to bottom,#06060f,transparent);z-index:2;pointer-events:none;}
+.pz-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:28%;background:linear-gradient(to top,#06060f,transparent);z-index:2;pointer-events:none;}
+.pz-scroll{position:absolute;inset:0;overflow:hidden;z-index:1;}
+.pz-inner{position:absolute;left:0;right:0;padding:0 18px;transition:transform 0.35s cubic-bezier(0.25,0.1,0.25,1);text-align:center;line-height:2.2;}
+.pz-word{display:inline;font-size:clamp(15px,4.2vw,21px);line-height:2.2;transition:opacity 0.2s,font-weight 0.15s;}
+.pz-anchor{position:absolute;left:0;right:0;pointer-events:none;z-index:3;}
+.pz-anchor-line{position:absolute;left:12%;right:12%;height:1.5px;background:rgba(124,58,237,0.15);border-radius:1px;}
 .w-done{color:rgba(255,255,255,0.18);}
 .w-cur{color:#fff;font-weight:600;background:rgba(100,140,255,0.22);border-radius:4px;padding:1px 5px;}
 .w-next{color:rgba(255,255,255,0.62);}
@@ -182,7 +189,7 @@ input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:poi
     </div>
     <div class="speed-row">
       <span class="speed-lbl">🐢</span>
-      <input type="range" class="speed-slider" id="speed-slider" min="150" max="800" value="420" oninput="updateSpeed(this.value)"/>
+      <input type="range" class="speed-slider" id="speed-slider" min="600" max="1800" value="1200" oninput="updateSpeed(this.value)"/>
       <span class="speed-lbl">🐇</span>
       <span class="speed-val" id="speed-val">Normal</span>
     </div>
@@ -396,22 +403,21 @@ function renderPrompt() {
   document.getElementById('prog-thumb').style.left = pct + '%';
 }
 
-// swipe navigation — restricted to prompter zone only, not speed slider
+// swipe navigation — restricted to prompter zone only
 function initSwipe() {
   const zone = document.getElementById('prompter-zone');
   let startX = 0, startY = 0, startWi = 0, swiping = false;
   zone.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-    startWi = wi;
-    swiping = false;
+    startWi = wi; swiping = false;
   }, { passive: true });
   zone.addEventListener('touchmove', e => {
     const dx = e.touches[0].clientX - startX;
     const dy = Math.abs(e.touches[0].clientY - startY);
-    if (!swiping && dy > Math.abs(dx)) return; // vertical — ignore
+    if (!swiping && dy > Math.abs(dx)) return;
     swiping = true;
-    const delta = Math.round(-dx / 8);
+    const delta = Math.round(-dx / 10);
     wi = Math.max(0, Math.min(WORDS.length - 1, startWi + delta));
     renderPrompt();
   }, { passive: true });
