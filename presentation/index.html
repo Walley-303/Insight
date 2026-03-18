@@ -56,8 +56,17 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',s
 .w-cur{color:#fff;font-weight:600;background:rgba(100,140,255,0.22);border-radius:4px;padding:1px 5px;}
 .w-next{color:rgba(255,255,255,0.62);}
 .w-off{color:var(--am);font-weight:600;background:rgba(245,158,11,0.12);border-radius:4px;padding:1px 5px;text-decoration:underline;}
-.prog{height:2px;background:rgba(255,255,255,0.05);flex-shrink:0;}
-.prog-f{height:100%;background:linear-gradient(90deg,rgba(124,58,237,0.45),rgba(6,182,212,0.45));transition:width .4s;}
+.prog{height:18px;background:rgba(255,255,255,0.05);flex-shrink:0;cursor:pointer;display:flex;align-items:center;padding:0 2px;position:relative;}
+.prog-f{height:4px;background:linear-gradient(90deg,rgba(124,58,237,0.6),rgba(6,182,212,0.6));border-radius:2px;transition:width .15s;pointer-events:none;}
+.prog-thumb{position:absolute;width:14px;height:14px;border-radius:50%;background:#a78bfa;border:2px solid #fff;transform:translateX(-50%);transition:left .15s;pointer-events:none;top:50%;margin-top:-7px;}
+.speed-row{padding:5px 12px;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border-top:1px solid var(--b1);flex-shrink:0;}
+.speed-lbl{font-size:9px;color:#444;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.speed-val{font-size:10px;color:#a78bfa;font-weight:600;min-width:36px;text-align:right;}
+input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:pointer;}
+.mic-indicator{position:fixed;bottom:90px;right:14px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:500;transition:all .3s;backdrop-filter:blur(8px);}
+.mic-indicator.active{background:rgba(239,68,68,0.25);border-color:rgba(239,68,68,0.5);box-shadow:0 0 12px rgba(239,68,68,0.3);}
+.mic-indicator.hearing{background:rgba(34,197,94,0.25);border-color:rgba(34,197,94,0.5);box-shadow:0 0 12px rgba(34,197,94,0.3);animation:mic-pulse .5s ease infinite;}
+@keyframes mic-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
 .tp-btns{padding:8px 12px;display:flex;gap:7px;background:rgba(0,0,0,0.55);border-top:1px solid var(--b1);flex-shrink:0;}
 .btn{background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:#888;border-radius:7px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s;flex:1;text-align:center;white-space:nowrap;}
 .btn:active{background:rgba(255,255,255,0.12);color:#fff;}
@@ -167,7 +176,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',s
       <div class="pz-bg"></div>
       <div class="pz-text" id="pz-text"></div>
     </div>
-    <div class="prog"><div class="prog-f" id="prog-f"></div></div>
+    <div class="prog" id="prog-bar">
+      <div class="prog-f" id="prog-f"></div>
+      <div class="prog-thumb" id="prog-thumb"></div>
+    </div>
+    <div class="speed-row">
+      <span class="speed-lbl">Speed</span>
+      <input type="range" class="speed-slider" id="speed-slider" min="150" max="800" value="420" oninput="updateSpeed(this.value)"/>
+      <span class="speed-val" id="speed-val">Normal</span>
+    </div>
     <div class="tp-btns">
       <div class="btn" onclick="prevSlide()">◀</div>
       <div class="btn pu" onclick="toggleAuto()" id="auto-btn">⏸</div>
@@ -210,6 +227,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',s
   <div class="ro-done" id="ro-done"></div>
   <div class="btn re" onclick="dismissResp()" style="flex:none;padding:10px;text-align:center;border-radius:8px;">✕ Dismiss & Return</div>
 </div>
+
+<!-- MIC INDICATOR -->
+<div class="mic-indicator" id="mic-ind">🎙</div>
 
 <!-- WAKE TOAST -->
 <div class="wake-toast hide" id="wake-toast">"InSight Reveal" — Activating…</div>
@@ -324,7 +344,15 @@ const QA = [
 let si = 0, wi = 0, autoOn = true, autoTimer = null, offScript = false;
 let WORDS = [], listening = false, recognition = null;
 let curTopic = null, respWords = [], respIdx = 0, respTimer = null;
-let dwellIv = null, wakeTO = null;
+let dwellIv = null, wakeTO = null, speed = 420;
+
+function updateSpeed(v) {
+  speed = parseInt(v);
+  const labels = {150:'Very Fast', 250:'Fast', 420:'Normal', 600:'Slow', 800:'Very Slow'};
+  const closest = Object.keys(labels).reduce((a,b) => Math.abs(b-v)<Math.abs(a-v)?b:a);
+  document.getElementById('speed-val').textContent = labels[closest] || 'Custom';
+  if (autoOn) startAuto();
+}
 
 function loadSlide(i) {
   si = i; const s = SLIDES[i];
@@ -349,27 +377,58 @@ function renderPrompt() {
     else h += `<span class="w-next">${WORDS[i]} </span>`;
   }
   document.getElementById('pz-text').innerHTML = h;
-  document.getElementById('prog-f').style.width = ((wi / Math.max(1, WORDS.length)) * 100) + '%';
+  const pct = (wi / Math.max(1, WORDS.length - 1)) * 100;
+  document.getElementById('prog-f').style.width = pct + '%';
+  document.getElementById('prog-thumb').style.left = pct + '%';
 }
-function startAuto() { clearInterval(autoTimer); if (autoOn) autoTimer = setInterval(() => { if (!offScript && wi < WORDS.length - 1) { wi++; renderPrompt(); } }, 420); }
+function startAuto() { clearInterval(autoTimer); if (autoOn) autoTimer = setInterval(() => { if (!offScript && wi < WORDS.length - 1) { wi++; renderPrompt(); } }, speed); }
 function stopAuto() { clearInterval(autoTimer); }
 function toggleAuto() { autoOn = !autoOn; document.getElementById('auto-btn').textContent = autoOn ? '⏸' : '▶'; autoOn ? startAuto() : stopAuto(); }
 function nextSlide() { if (si < SLIDES.length - 1) loadSlide(si + 1); }
 function prevSlide() { if (si > 0) loadSlide(si - 1); }
+
+// progress bar scrubbing
+function initProgressBar() {
+  const bar = document.getElementById('prog-bar');
+  function scrub(e) {
+    const rect = bar.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    wi = Math.round(pct * (WORDS.length - 1));
+    renderPrompt();
+  }
+  bar.addEventListener('touchstart', scrub, { passive: true });
+  bar.addEventListener('touchmove', scrub, { passive: true });
+  bar.addEventListener('mousedown', scrub);
+  bar.addEventListener('mousemove', e => { if (e.buttons === 1) scrub(e); });
+}
 
 function toggleListen() { listening ? stopListen() : startListen(); }
 function startListen() {
   if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) { alert('Use Safari on iPhone.'); return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
-  recognition.onresult = e => { let f = ''; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) f += e.results[i][0].transcript + ' '; } if (f) { matchScript(f); checkWake(f); } };
+  recognition.onresult = e => {
+    let f = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) f += e.results[i][0].transcript + ' '; }
+    if (f) {
+      // flash hearing indicator
+      const ind = document.getElementById('mic-ind');
+      ind.classList.add('hearing');
+      setTimeout(() => ind.classList.remove('hearing'), 600);
+      matchScript(f); checkWake(f);
+    }
+  };
   recognition.onerror = () => stopListen();
   recognition.onend = () => { if (listening) recognition.start(); };
   recognition.start(); listening = true;
+  document.getElementById('mic-ind').classList.add('active');
+  document.getElementById('mic-ind').textContent = '🎙';
   ['mic-btn', 'qa-mic'].forEach(id => { const b = document.getElementById(id); if (b) { b.textContent = '⏹'; b.classList.add('live'); } });
 }
 function stopListen() {
   recognition?.stop(); listening = false;
+  document.getElementById('mic-ind').classList.remove('active','hearing');
   ['mic-btn', 'qa-mic'].forEach(id => { const b = document.getElementById(id); if (b) { b.textContent = id === 'mic-btn' ? '🎙 Mic' : '🎙 Listen'; b.classList.remove('live'); } });
 }
 function matchScript(text) {
@@ -392,6 +451,7 @@ function startPresentation() {
   document.getElementById('app').classList.add('active');
   show('tp-view'); hide('qa-view'); setPill('SPEAKING', 'pu');
   loadSlide(0);
+  initProgressBar();
 }
 function goQA() {
   document.getElementById('home').style.display = 'none';
