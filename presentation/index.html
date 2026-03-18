@@ -142,7 +142,12 @@ input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;height:4p
 .ro-controls{display:flex;gap:10px;align-items:center;flex-shrink:0;}
 .ro-speed{display:flex;align-items:center;gap:8px;flex:1;}
 
-/* WAKE TOAST */
+/* DEMO PANEL */
+.demo-panel{flex:1;display:none;flex-direction:column;overflow:hidden;}
+.demo-panel.active{display:flex;}
+.demo-frame{flex:1;border:none;width:100%;background:#000;}
+.demo-bar{padding:8px 16px;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,0.6);border-top:1px solid var(--b1);flex-shrink:0;}
+.demo-title{font-size:12px;color:#a78bfa;font-weight:600;flex:1;}
 .wake-toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);border-radius:100px;padding:7px 22px;font-size:11px;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;transition:opacity .4s;white-space:nowrap;z-index:400;}
 .wake-toast.hide{opacity:0;pointer-events:none;}
 
@@ -154,7 +159,7 @@ input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;height:4p
 
 <div id="home">
   <div class="home-logo">InSight</div>
-  <div class="home-sub">HISTORY 488 · UMKC · Spring 2026</div>
+  <div class="home-sub">AI Capstone · UMKC · Spring 2026</div>
   <div class="home-badge">Walley · Mid-Term Proposal Presentation</div>
   <div class="home-cards">
     <div class="hcard" onclick="startPresentation()">
@@ -171,7 +176,7 @@ input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;height:4p
     </div>
     <div class="hcard" onclick="goQAandLoad(6)">
       <div class="hcard-icon">📋</div>
-      <div><div class="hcard-title">AI Disclosure</div><div class="hcard-desc">Required disclosure statement for HISTORY 488</div></div>
+      <div><div class="hcard-title">AI Disclosure</div><div class="hcard-desc">Required disclosure statement for the capstone</div></div>
     </div>
   </div>
   <div class="home-hint">Keyboard: <span class="kbd">Space</span> pause/resume · <span class="kbd">←</span><span class="kbd">→</span> nudge · <span class="kbd">↑</span><span class="kbd">↓</span> prev/next slide · <span class="kbd">M</span> mic</div>
@@ -220,6 +225,8 @@ input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;height:4p
       <div class="btn pu" onclick="toggleAuto()" id="auto-btn" style="flex:2">▶ Start</div>
       <div class="btn" onclick="nextSlide()" style="flex:0 0 auto">Next ▶</div>
       <div class="btn cy" onclick="goQA()" style="flex:1">Q&amp;A →</div>
+      <div class="btn" onclick="openDemo('scholar-demo')" style="flex:1">📚 Scholar</div>
+      <div class="btn" onclick="openDemo('hud-demo')" style="flex:1">👁 HUD</div>
     </div>
   </div>
 
@@ -286,7 +293,21 @@ input[type=range].sp-slider{flex:1;accent-color:#a78bfa;cursor:pointer;height:4p
   <div class="ro-done" id="ro-done"></div>
 </div>
 
-<div class="wake-toast hide" id="wake-toast">Switching to Q&amp;A…</div>
+  <div class="demo-panel" id="scholar-demo">
+    <iframe class="demo-frame" src="https://walley-303.github.io/Insight/scholar-field-demo/index.html#scholar"></iframe>
+    <div class="demo-bar">
+      <div class="demo-title">📚 Scholar & Field Mode Demo</div>
+      <div class="btn pu" onclick="closeDemo()" style="flex:0 0 auto">← Back to Presentation</div>
+    </div>
+  </div>
+
+  <div class="demo-panel" id="hud-demo">
+    <iframe class="demo-frame" src="https://walley-303.github.io/Insight/hud-demo/index.html"></iframe>
+    <div class="demo-bar">
+      <div class="demo-title">👁 HUD Lens Demo</div>
+      <div class="btn pu" onclick="closeDemo()" style="flex:0 0 auto">← Back to Presentation</div>
+    </div>
+  </div>
 
 <script>
 var SLIDES = [
@@ -723,6 +744,18 @@ function scrubProg(e){ var r=document.getElementById('prog-wrap').getBoundingCli
 function clearQA(){ var cs=document.getElementById('qa-scroll'); cs.innerHTML=''; var idle=document.getElementById('qa-idle'); if(idle) cs.appendChild(idle); }
 function clearTranscript(){ liveTranscript=''; var el=document.getElementById('qa-transcript-txt'); var em=document.getElementById('qa-transcript-empty'); if(el){el.textContent='';el.style.display='none';} if(em) em.style.display='block'; }
 
+function openDemo(id){
+  stopAuto();
+  hide('tp-view'); hide('qa-view');
+  document.querySelectorAll('.demo-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  setPill('DEMO','cy');
+}
+function closeDemo(){
+  document.querySelectorAll('.demo-panel').forEach(function(p){ p.classList.remove('active'); });
+  show('tp-view'); hide('qa-view');
+  setPill('SPEAKING','pu');
+}
 function startPresentation(){
   document.getElementById('home').style.display='none';
   document.getElementById('app').classList.add('active');
