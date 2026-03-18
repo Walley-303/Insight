@@ -49,9 +49,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',s
 .slide-head{padding:8px 16px;background:rgba(124,58,237,0.07);border-bottom:1px solid rgba(124,58,237,0.12);flex-shrink:0;}
 .slide-title{font-size:11px;font-weight:700;color:#a78bfa;letter-spacing:.5px;text-transform:uppercase;}
 .slide-pts{font-size:9px;color:rgba(124,58,237,0.5);margin-top:2px;font-weight:600;letter-spacing:.5px;}
-.prompter-zone{flex:1;display:flex;align-items:center;justify-content:center;padding:18px 20px;position:relative;overflow:hidden;}
+.prompter-zone{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 18px;position:relative;overflow:hidden;}
 .pz-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(124,58,237,0.04),transparent);}
-.pz-text{font-size:clamp(15px,4.5vw,24px);line-height:2;text-align:center;position:relative;z-index:1;}
+.pz-text{font-size:clamp(14px,4vw,20px);line-height:2;text-align:center;position:relative;z-index:1;width:100%;}
 .w-done{color:rgba(255,255,255,0.18);}
 .w-cur{color:#fff;font-weight:600;background:rgba(100,140,255,0.22);border-radius:4px;padding:1px 5px;}
 .w-next{color:rgba(255,255,255,0.62);}
@@ -181,8 +181,9 @@ input[type=range].speed-slider{flex:1;accent-color:#a78bfa;height:3px;cursor:poi
       <div class="prog-thumb" id="prog-thumb"></div>
     </div>
     <div class="speed-row">
-      <span class="speed-lbl">Speed</span>
+      <span class="speed-lbl">🐢</span>
       <input type="range" class="speed-slider" id="speed-slider" min="150" max="800" value="420" oninput="updateSpeed(this.value)"/>
+      <span class="speed-lbl">🐇</span>
       <span class="speed-val" id="speed-val">Normal</span>
     </div>
     <div class="tp-btns">
@@ -368,18 +369,52 @@ function renderDots() {
   SLIDES.forEach((_, i) => { const d = document.createElement('div'); d.className = 'sdot' + (i === si ? ' active' : i < si ? ' done' : ''); d.onclick = () => loadSlide(i); el.appendChild(d); });
 }
 function renderPrompt() {
-  const vis = 11, start = Math.max(0, wi - 3), end = Math.min(WORDS.length, start + vis);
+  // show more words — past words fade behind, current highlighted, future words fade ahead
+  const behind = 12, ahead = 30;
+  const start = Math.max(0, wi - behind);
+  const end = Math.min(WORDS.length, wi + ahead);
   let h = '';
-  if (start > 0) h += '<span class="w-done">… </span>';
+  if (start > 0) h += '<span class="w-done" style="opacity:0.1">… </span>';
   for (let i = start; i < end; i++) {
-    if (i < wi) h += `<span class="w-done">${WORDS[i]} </span>`;
-    else if (i === wi) h += `<span class="${offScript ? 'w-off' : 'w-cur'}">${WORDS[i]} </span>`;
-    else h += `<span class="w-next">${WORDS[i]} </span>`;
+    const dist = i - wi;
+    if (i < wi) {
+      // words already spoken — fade out progressively
+      const opacity = Math.max(0.08, 0.22 - (wi - i) * 0.025);
+      h += `<span class="w-done" style="opacity:${opacity.toFixed(2)}">${WORDS[i]} </span>`;
+    } else if (i === wi) {
+      // current word — bright and highlighted
+      h += `<span class="${offScript ? 'w-off' : 'w-cur'}">${WORDS[i]} </span>`;
+    } else {
+      // upcoming words — fade in progressively
+      const opacity = Math.max(0.15, 0.75 - dist * 0.04);
+      h += `<span class="w-next" style="opacity:${opacity.toFixed(2)}">${WORDS[i]} </span>`;
+    }
   }
   document.getElementById('pz-text').innerHTML = h;
   const pct = (wi / Math.max(1, WORDS.length - 1)) * 100;
   document.getElementById('prog-f').style.width = pct + '%';
   document.getElementById('prog-thumb').style.left = pct + '%';
+}
+
+// swipe navigation
+function initSwipe() {
+  const zone = document.getElementById('tp-view');
+  let startX = 0, startY = 0, startWi = 0;
+  zone.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startWi = wi;
+  }, { passive: true });
+  zone.addEventListener('touchmove', e => {
+    const dx = e.touches[0].clientX - startX;
+    const dy = Math.abs(e.touches[0].clientY - startY);
+    if (dy > 30) return; // ignore vertical scroll
+    // each ~8px of swipe = 1 word
+    const delta = Math.round(-dx / 8);
+    wi = Math.max(0, Math.min(WORDS.length - 1, startWi + delta));
+    renderPrompt();
+  }, { passive: true });
+  zone.addEventListener('touchend', () => { startWi = wi; }, { passive: true });
 }
 function startAuto() { clearInterval(autoTimer); if (autoOn) autoTimer = setInterval(() => { if (!offScript && wi < WORDS.length - 1) { wi++; renderPrompt(); } }, speed); }
 function stopAuto() { clearInterval(autoTimer); }
@@ -452,6 +487,7 @@ function startPresentation() {
   show('tp-view'); hide('qa-view'); setPill('SPEAKING', 'pu');
   loadSlide(0);
   initProgressBar();
+  initSwipe();
 }
 function goQA() {
   document.getElementById('home').style.display = 'none';
