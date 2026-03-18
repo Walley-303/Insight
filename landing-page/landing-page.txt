@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<!-- Save as: landing-page/index.html -->
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InSight — See More. Know More. Say More.</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --pu:#7c3aed;--pul:#a78bfa;--pug:rgba(124,58,237,0.25);
+  --cy:#06b6d4;--gr:#22c55e;--am:#f59e0b;--re:#ef4444;
+  --em:#10b981;--or:#f97316;
+  --bg:#06060f;--s1:rgba(255,255,255,0.04);--b1:rgba(255,255,255,0.08);
+  --tx:#b0b8d0;--txh:#e8e8f0;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;overflow-x:hidden;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 40px;display:flex;align-items:center;gap:12px;background:rgba(6,6,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.5px;background:linear-gradient(135deg,#fff 30%,var(--pul));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-right:8px;}
+.nav-links{display:flex;gap:24px;list-style:none;}
+.nav-links a{color:#666;text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;}
+.nav-links a:hover{color:#fff;}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.nav-badge{font-size:11px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);color:var(--pul);border-radius:100px;padding:3px 12px;}
+.nav-cta{background:var(--pu);color:#fff;border:none;padding:9px 20px;border-radius:7px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
+.nav-cta:hover{background:#6d28d9;transform:translateY(-1px);}
+@media(max-width:860px){.nav-links{display:none;}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(124,58,237,0.16),transparent 70%);}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 75%);}
+.badge{display:inline-flex;align-items:center;gap:7px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.28);border-radius:100px;padding:5px 14px;font-size:12px;color:var(--pul);margin-bottom:26px;font-weight:500;}
+.badge-dot{width:6px;height:6px;background:var(--pul);border-radius:50%;animation:pulse 2s infinite;}
+h1{font-size:clamp(40px,7vw,90px);font-weight:900;line-height:1.04;letter-spacing:-2.5px;margin-bottom:22px;color:var(--txh);}
+h1 .g{background:linear-gradient(135deg,#fff 0%,var(--pul) 50%,var(--cy) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{font-size:clamp(15px,2vw,19px);color:#7a85a0;max-width:560px;line-height:1.75;margin-bottom:40px;}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:64px;}
+.btn-p{background:var(--pu);color:#fff;border:none;padding:15px 34px;border-radius:9px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 0 40px var(--pug);transition:all .25s;}
+.btn-p:hover{background:#6d28d9;transform:translateY(-2px);}
+.btn-s{background:transparent;color:#ccc;border:1px solid var(--b1);padding:15px 34px;border-radius:9px;font-weight:600;font-size:15px;cursor:pointer;transition:all .25s;}
+.btn-s:hover{border-color:rgba(255,255,255,0.22);color:#fff;}
+
+/* HUD PREVIEW */
+.hud-wrap{width:min(720px,92vw);border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.09);box-shadow:0 0 80px rgba(124,58,237,0.18),0 40px 80px rgba(0,0,0,0.55);}
+.hud-scene{background:linear-gradient(160deg,#0d1117,#080a14);padding:28px 32px;position:relative;min-height:240px;display:flex;flex-direction:column;gap:12px;}
+.hud-scene::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 40% at 50% 50%,rgba(124,58,237,0.05),transparent);pointer-events:none;}
+.hud-scanline{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(100,140,255,0.1),transparent);animation:scan 5s linear infinite;}
+.hc{position:absolute;width:14px;height:14px;border-color:rgba(100,150,255,0.35);border-style:solid;}
+.hc.tl{top:10px;left:10px;border-width:1.5px 0 0 1.5px;}.hc.tr{top:10px;right:10px;border-width:1.5px 1.5px 0 0;}
+.hc.bl{bottom:10px;left:10px;border-width:0 0 1.5px 1.5px;}.hc.br{bottom:10px;right:10px;border-width:0 1.5px 1.5px 0;}
+.hud-bar{display:flex;align-items:center;gap:8px;}
+.hd{width:5px;height:5px;border-radius:50%;}
+.hl{font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;}
+.hud-text{font-size:clamp(13px,2vw,19px);line-height:1.9;color:rgba(255,255,255,0.55);}
+.hud-text .cur{color:#fff;font-weight:600;background:rgba(100,140,255,0.22);padding:0 4px;border-radius:3px;}
+.hud-ai-box{background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.22);border-radius:9px;padding:9px 13px;}
+.hud-ai-lbl{font-size:9px;color:var(--cy);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+.hud-ai-txt{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6;}
+.preview-cap{font-size:11px;color:#2a2a3a;text-align:center;padding:10px;background:rgba(0,0,0,0.5);}
+
+/* STATS */
+.stats{padding:50px 24px;display:flex;justify-content:center;gap:clamp(20px,6vw,80px);flex-wrap:wrap;border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);background:rgba(255,255,255,0.01);}
+.stat-n{font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,#fff,var(--pul));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-l{font-size:12px;color:#4a5270;margin-top:3px;font-weight:500;}
+
+/* SECTIONS */
+.sec{padding:90px 24px;max-width:1080px;margin:0 auto;}
+.sec-tag{font-size:11px;text-transform:uppercase;letter-spacing:3px;font-weight:600;margin-bottom:12px;}
+.sec-h{font-size:clamp(26px,4vw,46px);font-weight:800;letter-spacing:-1px;line-height:1.15;margin-bottom:14px;color:var(--txh);}
+.sec-sub{font-size:15px;color:#5a6280;max-width:500px;line-height:1.75;}
+.divider{border:none;border-top:1px solid var(--b1);margin:0;}
+
+/* MODE TABS (hero for each major mode) */
+.mode-hero{padding:80px 24px;position:relative;overflow:hidden;}
+.mode-hero-inner{max-width:1080px;margin:0 auto;}
+.mode-tag{display:inline-flex;align-items:center;gap:7px;border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;margin-top:48px;}
+@media(max-width:720px){.mode-grid{grid-template-columns:1fr;}}
+.mode-features{display:flex;flex-direction:column;gap:16px;margin-top:28px;}
+.mode-feat{display:flex;gap:14px;align-items:flex-start;}
+.mode-feat-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.mode-feat-title{font-size:14px;font-weight:700;color:var(--txh);margin-bottom:3px;}
+.mode-feat-desc{font-size:13px;color:#5a6280;line-height:1.65;}
+
+/* DEMO CARDS */
+.demo-card{border-radius:16px;overflow:hidden;border:1px solid;}
+.demo-card-header{padding:10px 16px;font-size:9px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+.demo-card-body{padding:20px;}
+.demo-line{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.demo-line:last-child{border-bottom:none;}
+.demo-line-tag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;white-space:nowrap;margin-top:2px;min-width:70px;}
+.demo-line-text{font-size:12px;color:rgba(200,220,255,0.75);line-height:1.6;}
+.demo-cite{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:7px 10px;margin-top:6px;}
+.demo-cite-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,158,11,0.6);margin-bottom:3px;}
+.demo-cite-txt{font-size:11px;color:rgba(245,200,100,0.75);line-height:1.5;font-style:italic;}
+
+/* FIELD DEMO */
+.field-card{border-radius:16px;overflow:hidden;}
+.field-header{padding:10px 16px;font-size:9px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+.field-body{padding:18px;}
+.field-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.field-row:last-child{border-bottom:none;}
+.field-key{font-size:12px;color:#5a6280;}
+.field-val{font-size:12px;color:var(--txh);font-weight:500;}
+.field-flag{display:inline-flex;align-items:center;gap:4px;font-size:10px;border-radius:4px;padding:2px 7px;}
+.flag-warn{background:rgba(245,158,11,0.12);color:var(--am);border:1px solid rgba(245,158,11,0.2);}
+.flag-ok{background:rgba(34,197,94,0.1);color:var(--gr);border:1px solid rgba(34,197,94,0.2);}
+.flag-bad{background:rgba(239,68,68,0.1);color:var(--re);border:1px solid rgba(239,68,68,0.2);}
+
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:2px;margin-top:52px;border:1px solid var(--b1);border-radius:16px;overflow:hidden;}
+.step{padding:26px 22px;background:var(--s1);transition:background .3s;position:relative;}
+.step:hover{background:rgba(255,255,255,0.06);}
+.step-num{font-size:11px;font-weight:700;color:var(--pul);letter-spacing:2px;margin-bottom:12px;opacity:0.7;}
+.step-icon{font-size:22px;margin-bottom:10px;}
+.step-title{font-size:15px;font-weight:700;color:var(--txh);margin-bottom:6px;}
+.step-desc{font-size:13px;color:#5a6280;line-height:1.7;}
+
+/* FEATURES */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:52px;}
+.feat-card{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:24px;transition:all .3s;position:relative;overflow:hidden;}
+.feat-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 0% 0%,var(--cg,rgba(124,58,237,0.07)),transparent 55%);pointer-events:none;}
+.feat-card:hover{border-color:rgba(255,255,255,0.14);transform:translateY(-3px);}
+.feat-icon{font-size:24px;margin-bottom:14px;}
+.feat-title{font-size:16px;font-weight:700;color:var(--txh);margin-bottom:7px;}
+.feat-desc{font-size:13px;color:#5a6280;line-height:1.7;}
+
+/* USE CASES */
+.cases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:52px;}
+.case-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:20px 16px;text-align:center;transition:all .3s;}
+.case-card:hover{border-color:rgba(124,58,237,0.35);background:rgba(124,58,237,0.07);transform:translateY(-2px);}
+.case-icon{font-size:30px;margin-bottom:9px;}
+.case-title{font-size:14px;font-weight:700;color:var(--txh);margin-bottom:4px;}
+.case-desc{font-size:12px;color:#5a6280;line-height:1.6;}
+
+/* SPECS */
+.specs-layout{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:52px;}
+@media(max-width:680px){.specs-layout{grid-template-columns:1fr;}}
+.spec-group{margin-bottom:22px;}
+.spec-group-title{font-size:10px;color:var(--pul);letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--b1);}
+.spec-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.spec-row:last-child{border-bottom:none;}
+.spec-key{font-size:13px;color:#5a6280;}
+.spec-val{font-size:13px;color:var(--txh);font-weight:500;text-align:right;}
+.spec-badge{display:inline-block;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.2);color:var(--pul);font-size:10px;border-radius:4px;padding:1px 7px;margin-left:6px;}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:52px;}
+.price-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:28px 24px;transition:all .3s;position:relative;}
+.price-card.featured{border-color:rgba(124,58,237,0.45);background:rgba(124,58,237,0.07);}
+.price-card.featured::before{content:'Most Popular';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--pu);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 14px;border-radius:0 0 8px 8px;}
+.price-tier{font-size:12px;color:var(--pul);letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-bottom:10px;}
+.price-amt{font-size:36px;font-weight:900;color:var(--txh);letter-spacing:-1px;margin-bottom:4px;}
+.price-amt span{font-size:14px;font-weight:400;color:#5a6280;}
+.price-note{font-size:12px;color:#4a5270;margin-bottom:20px;}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px;}
+.price-features li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--tx);}
+.price-features li::before{content:'✓';color:var(--gr);font-weight:700;font-size:12px;margin-top:2px;flex-shrink:0;}
+.price-features li.muted{color:#4a5270;}
+.price-features li.muted::before{content:'—';color:#333;}
+.price-btn{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:#ccc;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;}
+.price-btn:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.price-card.featured .price-btn{background:var(--pu);border-color:var(--pu);color:#fff;}
+.price-card.featured .price-btn:hover{background:#6d28d9;}
+
+/* TEAM */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-top:52px;}
+.team-card{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:24px 20px;text-align:center;transition:all .3s;}
+.team-card:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-2px);}
+.team-avatar{width:60px;height:60px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--b1);}
+.team-name{font-size:15px;font-weight:700;color:var(--txh);margin-bottom:3px;}
+.team-role{font-size:12px;color:var(--pul);margin-bottom:7px;font-weight:500;}
+.team-bio{font-size:12px;color:#5a6280;line-height:1.6;}
+
+/* FAQ */
+.faq-list{margin-top:48px;display:flex;flex-direction:column;gap:2px;border:1px solid var(--b1);border-radius:14px;overflow:hidden;}
+.faq-item{border-bottom:1px solid var(--b1);background:var(--s1);}
+.faq-item:last-child{border-bottom:none;}
+.faq-q{padding:17px 22px;font-size:14px;font-weight:600;color:var(--txh);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .2s;}
+.faq-q:hover{background:rgba(255,255,255,0.03);}
+.faq-arrow{font-size:11px;color:#444;transition:transform .25s;}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.faq-a-inner{padding:0 22px 17px;font-size:13px;color:#5a6280;line-height:1.75;}
+.faq-item.open .faq-arrow{transform:rotate(180deg);}
+.faq-item.open .faq-a{max-height:220px;}
+
+/* CTA */
+.cta-sec{padding:110px 24px;text-align:center;position:relative;overflow:hidden;}
+.cta-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% 100%,rgba(124,58,237,0.13),transparent 70%);}
+.cta-h{font-size:clamp(30px,5vw,62px);font-weight:900;letter-spacing:-2px;line-height:1.1;margin-bottom:18px;color:var(--txh);}
+.cta-sub{font-size:17px;color:#5a6280;margin-bottom:40px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.75;}
+.waitlist{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+.waitlist input{background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:#fff;padding:13px 18px;border-radius:9px;font-size:14px;width:270px;outline:none;font-family:inherit;transition:border .2s;}
+.waitlist input:focus{border-color:var(--pu);}
+.waitlist input::placeholder{color:#333;}
+.waitlist button{background:var(--pu);color:#fff;border:none;padding:13px 26px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;transition:all .25s;}
+.waitlist button:hover{background:#6d28d9;transform:translateY(-1px);}
+
+/* FOOTER */
+footer{border-top:1px solid var(--b1);padding:40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
+@media(max-width:600px){footer{grid-template-columns:1fr;}}
+.footer-logo{font-size:18px;font-weight:900;background:linear-gradient(135deg,#fff,var(--pul));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+.footer-col-title{font-size:10px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-weight:600;}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.footer-links a{font-size:13px;color:#444;text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:#ccc;}
+.footer-bottom{border-top:1px solid var(--b1);padding:16px 40px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.footer-bottom-txt{font-size:11px;color:#222;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+@keyframes scan{0%{top:-1px;}100%{top:100%;}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">InSight</div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#modes">Modes</a></li>
+    <li><a href="#scholar">Scholar</a></li>
+    <li><a href="#field">Field</a></li>
+    <li><a href="#specs">Specs</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-badge">Early Concept</div>
+    <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div><div class="hero-grid"></div>
+  <div class="badge"><span class="badge-dot"></span>Powered by Real-Time AI · Early Concept</div>
+  <h1><span class="g">See More.<br/>Know More.<br/>Say More.</span></h1>
+  <p class="hero-sub">InSight smart glasses give you an invisible AI co-pilot — teleprompter, live response assist, gaze-driven selection, scholar research, and field intelligence, all without anyone knowing.</p>
+  <div class="hero-btns">
+    <button class="btn-p" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join the Waitlist</button>
+    <button class="btn-s" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See How It Works</button>
+  </div>
+  <div class="hud-wrap">
+    <div class="hud-scene">
+      <div class="hud-scanline"></div>
+      <div class="hc tl"></div><div class="hc tr"></div><div class="hc bl"></div><div class="hc br"></div>
+      <div class="hud-bar">
+        <div class="hd" style="background:var(--gr);box-shadow:0 0 6px var(--gr);animation:pulse 2s infinite"></div>
+        <span class="hl">InSight · Live · AI Ready</span>
+      </div>
+      <div class="hud-text">
+        <span style="color:rgba(255,255,255,0.22)">We stand at a remarkable inflection point in</span><br/>
+        <span style="color:rgba(255,255,255,0.22)">human history. The tools we are building</span><br/>
+        <span class="cur">today</span> <span>will shape economies, governments,</span><br/>
+        <span>and daily life for generations to come.</span>
+      </div>
+      <div class="hud-ai-box">
+        <div class="hud-ai-lbl"><span style="width:5px;height:5px;background:var(--cy);border-radius:50%;display:inline-block;animation:pulse 1.5s infinite"></span>AI Assist · Q Detected</div>
+        <div class="hud-ai-txt">Suggested: "AI governance frameworks now exist in 47 nations — the EU AI Act sets the global benchmark." Counter: Ready for "regulation stifles innovation" — cite GDPR as proof that rights-based frameworks build trust.</div>
+      </div>
+    </div>
+    <div class="preview-cap">Simulated lens view — what only the wearer sees</div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div style="text-align:center"><div class="stat-n">&lt;80ms</div><div class="stat-l">AI response latency</div></div>
+  <div style="text-align:center"><div class="stat-n">6</div><div class="stat-l">Intelligent modes</div></div>
+  <div style="text-align:center"><div class="stat-n">2-eye</div><div class="stat-l">Gaze interaction</div></div>
+  <div style="text-align:center"><div class="stat-n">0</div><div class="stat-l">Visible to audience</div></div>
+</div>
+<hr class="divider"/>
+
+<!-- HOW IT WORKS -->
+<section class="sec" id="how">
+  <div class="sec-tag" style="color:var(--pul)">How It Works</div>
+  <h2 class="sec-h">From question to answer<br/>in under two seconds.</h2>
+  <p class="sec-sub">InSight's dual-eye system splits the cognitive load — your left eye stays on track, your right eye stays informed.</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">01</div><div class="step-icon">🎙</div><div class="step-title">InSight listens</div><div class="step-desc">Dual microphones in the temple arms capture incoming speech, isolating questions from ambient noise in real time.</div></div>
+    <div class="step"><div class="step-num">02</div><div class="step-icon">🧠</div><div class="step-title">AI generates options</div><div class="step-desc">Claude AI analyzes the question, pulls live web data, and generates 2–4 response strategies with facts and anticipated rebuttals.</div></div>
+    <div class="step"><div class="step-num">03</div><div class="step-icon">👁</div><div class="step-title">You select by gaze</div><div class="step-desc">Response cards appear on the right lens. Dwell one second, blink, or tap the remote to confirm your choice.</div></div>
+    <div class="step"><div class="step-num">04</div><div class="step-icon">📜</div><div class="step-title">Left lens activates</div><div class="step-desc">Your response loads as a live teleprompter. The opening line appears first, then words follow naturally at your pace.</div></div>
+  </div>
+</section>
+<hr class="divider"/>
+
+<!-- CORE FEATURES -->
+<section class="sec" id="modes">
+  <div class="sec-tag" style="color:var(--pul)">Core Features</div>
+  <h2 class="sec-h">Everything you need.<br/>Nothing they can see.</h2>
+  <div class="feat-grid">
+    <div class="feat-card" style="--cg:rgba(124,58,237,0.1)"><div class="feat-icon">📜</div><div class="feat-title">Smart Teleprompter</div><div class="feat-desc">Voice-matched scrolling advances word-by-word as you speak. Go off script — your last position stays highlighted in amber.</div></div>
+    <div class="feat-card" style="--cg:rgba(6,182,212,0.08)"><div class="feat-icon">👁</div><div class="feat-title">Dual-Eye Gaze Selection</div><div class="feat-desc">Left lens handles your script. Right lens shows response options. Select by dwell, blink, or remote tap — invisible to everyone else.</div></div>
+    <div class="feat-card" style="--cg:rgba(34,197,94,0.07)"><div class="feat-icon">🌐</div><div class="feat-title">Real-Time Web Data</div><div class="feat-desc">Every AI suggestion is grounded in live data pulled from the web at the moment you need it — not a static knowledge base.</div></div>
+    <div class="feat-card" style="--cg:rgba(245,158,11,0.08)"><div class="feat-icon">📖</div><div class="feat-title">Reading Intelligence</div><div class="feat-desc">Look at any text and ask "what do they mean?" — InSight uses eye tracking to know what you're reading and provides instant context.</div></div>
+    <div class="feat-card" style="--cg:rgba(239,68,68,0.07)"><div class="feat-icon">⚔</div><div class="feat-title">Debate & Q&A Mode</div><div class="feat-desc">Multi-point challenges queue on the right lens as ambient dots. Address each in order or jump — the queue updates as you go.</div></div>
+    <div class="feat-card" style="--cg:rgba(124,58,237,0.1)"><div class="feat-icon">🎮</div><div class="feat-title">Wireless Remote</div><div class="feat-desc">One clicker replaces your slide remote. Scroll, select, record — all controls without breaking eye contact.</div></div>
+  </div>
+</section>
+<hr class="divider"/>
+
+<!-- SCHOLAR MODE -->
+<section class="mode-hero" id="scholar" style="background:linear-gradient(160deg,rgba(16,185,129,0.04) 0%,transparent 60%);">
+  <div class="mode-hero-inner">
+    <div class="mode-tag" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#10b981;">📚 Scholar Mode</div>
+    <h2 class="sec-h" style="max-width:600px">Research while you write.<br/>Write before you research.</h2>
+    <p class="sec-sub">Scholar Mode turns InSight into an active research partner — connecting ideas, surfacing sources, and building citations as you work through any document or writing project.</p>
+    <div class="mode-grid">
+      <div>
+        <div class="mode-features">
+          <div class="mode-feat">
+            <div class="mode-feat-icon" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2)">🔗</div>
+            <div><div class="mode-feat-title">Idea Connection</div><div class="mode-feat-desc">As you read or write, InSight surfaces connections between concepts across your open documents, suggesting how ideas relate or conflict.</div></div>
+          </div>
+          <div class="mode-feat">
+            <div class="mode-feat-icon" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15)">✂</div>
+            <div><div class="mode-feat-title">Smart Quote Clipping</div><div class="mode-feat-desc">Look at a passage and say "clip that" — InSight captures the quote with full citation metadata: author, title, publisher, page, date, and format.</div></div>
+          </div>
+          <div class="mode-feat">
+            <div class="mode-feat-icon" style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2)">🔍</div>
+            <div><div class="mode-feat-title">Write First, Source Later</div><div class="mode-feat-desc">Draft your argument freely — InSight's agent scans academic databases, archives, and the web to find supporting sources and suggest where they integrate.</div></div>
+          </div>
+          <div class="mode-feat">
+            <div class="mode-feat-icon" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.15)">📋</div>
+            <div><div class="mode-feat-title">Auto-Formatted Citations</div><div class="mode-feat-desc">Every clip and suggestion arrives citation-ready in MLA, APA, Chicago, or Bluebook — appropriate for academic, journalism, or legal work.</div></div>
+          </div>
+        </div>
+        <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:7px;padding:5px 12px;font-size:12px;color:#10b981;">🎓 Academic</div>
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:7px;padding:5px 12px;font-size:12px;color:#10b981;">🗞 Journalism</div>
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:7px;padding:5px 12px;font-size:12px;color:#10b981;">⚖ Legal</div>
+        </div>
+      </div>
+      <div>
+        <div class="demo-card" style="background:rgba(0,0,0,0.4);border-color:rgba(16,185,129,0.2);">
+          <div class="demo-card-header" style="background:rgba(16,185,129,0.07);border-bottom:1px solid rgba(16,185,129,0.12);color:#10b981;">
+            <span style="width:5px;height:5px;background:#10b981;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>
+            Scholar Mode · Active
+          </div>
+          <div class="demo-card-body">
+            <div class="demo-line">
+              <div class="demo-line-tag" style="color:#10b981;">Reading</div>
+              <div class="demo-line-text">You're looking at: <em>"The social contract theory, as articulated by Rousseau, presupposes a general will that transcends individual interests…"</em></div>
+            </div>
+            <div class="demo-line">
+              <div class="demo-line-tag" style="color:var(--pul);">Connection</div>
+              <div class="demo-line-text">This conflicts with your paragraph 3 draft — you argued individual autonomy is primary. Consider Locke's counter-position here.</div>
+            </div>
+            <div class="demo-line">
+              <div class="demo-line-tag" style="color:var(--am);">Clip ready</div>
+              <div class="demo-line-text">Quote clipped. Citation auto-built:</div>
+            </div>
+            <div class="demo-cite">
+              <div class="demo-cite-lbl">MLA Citation</div>
+              <div class="demo-cite-txt">Rousseau, Jean-Jacques. <em>The Social Contract.</em> Trans. G.D.H. Cole. London: Dent, 1973. p. 84.</div>
+            </div>
+            <div class="demo-line" style="margin-top:8px">
+              <div class="demo-line-tag" style="color:var(--cy);">Source found</div>
+              <div class="demo-line-text">Your claim in §2 lacks a source. Found: Cohen, J. (2010) "Rousseau's General Will" — 94% relevance match. Insert?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="divider"/>
+
+<!-- FIELD MODE -->
+<section class="mode-hero" id="field" style="background:linear-gradient(160deg,rgba(249,115,22,0.04) 0%,transparent 60%);">
+  <div class="mode-hero-inner">
+    <div class="mode-tag" style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);color:var(--or);">🔧 Field Mode</div>
+    <h2 class="sec-h" style="max-width:600px">Instant intelligence<br/>on everything you see.</h2>
+    <p class="sec-sub">Field Mode turns InSight into a live assessment tool — giving sales professionals, insurance adjusters, mechanics, and retail staff instant, actionable intelligence on any product or person in front of them.</p>
+    <div class="mode-grid">
+      <div>
+        <div class="mode-features">
+          <div class="mode-feat">
+            <div class="mode-feat-icon" style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.18)">🏍</div>
+            <div><div class="mode-feat-title">Vehicle & Unit Analysis</div><div class="mode-feat-desc">Look at a vehicle — InSight pulls specs, current market value, trade-in range, recall history, and known issues for that make, model, and year instantly.</div></div>
+          </div>
+          <div class="mode-feat">
+            <div class="mode-feat-icon" style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.15)">🔍</div>
+            <div><div class="mode-feat-title">Damage & Defect Flagging</div><div class="mode-feat-desc">For insurance adjusters and mechanics, the forward camera flags visible damage, cross-references common failure points, and estimates repair cost ranges.</div></div>
+          </div>
+          <div class="mode-feat">
+            <div class="mode-feat-icon" style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2)">👗</div>
+            <div><div class="mode-feat-title">Retail Style Assistant</div><div class="mode-feat-desc">In fashion retail, InSight reads the customer's current aesthetic and stated preferences, then suggests looks, checks live inventory, and bridges to online alternatives.</div></div>
+          </div>
+          <div class="mode-feat">
+            <div class="mode-feat-icon" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15)">📦</div>
+            <div><div class="mode-feat-title">Live Inventory Integration</div><div class="mode-feat-desc">Connected to your store system, InSight shows stock levels, size availability, and reorder status in real time — without leaving the customer's side.</div></div>
+          </div>
+        </div>
+        <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.18);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--or);">🏍 Powersports</div>
+          <div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.18);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--or);">🛡 Insurance</div>
+          <div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.18);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--or);">👗 Fashion Retail</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="field-card" style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.2);">
+          <div class="field-header" style="background:rgba(249,115,22,0.07);border-bottom:1px solid rgba(249,115,22,0.12);color:var(--or);">
+            <span style="width:5px;height:5px;background:var(--or);border-radius:50%;display:inline-block"></span>
+            Vehicle Scan · 2019 Harley-Davidson Road Glide
+          </div>
+          <div class="field-body">
+            <div class="field-row"><span class="field-key">Market value</span><span class="field-val">$14,200 – $16,800</span></div>
+            <div class="field-row"><span class="field-key">Trade-in range</span><span class="field-val">$11,400 – $13,200</span></div>
+            <div class="field-row"><span class="field-key">Mileage vs avg</span><span class="field-val"><span class="field-flag flag-ok">✓ Below average</span></span></div>
+            <div class="field-row"><span class="field-key">Open recalls</span><span class="field-val"><span class="field-flag flag-warn">⚠ 1 open recall</span></span></div>
+            <div class="field-row"><span class="field-key">Known issue</span><span class="field-val"><span class="field-flag flag-warn">⚠ Throttle body</span></span></div>
+          </div>
+        </div>
+        <div class="field-card" style="background:rgba(0,0,0,0.4);border:1px solid rgba(124,58,237,0.2);">
+          <div class="field-header" style="background:rgba(124,58,237,0.07);border-bottom:1px solid rgba(124,58,237,0.12);color:var(--pul);">
+            <span style="width:5px;height:5px;background:var(--pul);border-radius:50%;display:inline-block"></span>
+            Style Assist · Customer: casual-chic, prefers earth tones
+          </div>
+          <div class="field-body">
+            <div class="field-row"><span class="field-key">Suggested look</span><span class="field-val">Linen blazer + wide-leg trouser</span></div>
+            <div class="field-row"><span class="field-key">In-store stock</span><span class="field-val"><span class="field-flag flag-ok">✓ Sizes 4–12 available</span></span></div>
+            <div class="field-row"><span class="field-key">Online alternative</span><span class="field-val">3 options, ships same day</span></div>
+            <div class="field-row"><span class="field-key">Upsell suggestion</span><span class="field-val">Tan leather belt — aisle 4</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="divider"/>
+
+<!-- USE CASES GRID -->
+<section class="sec">
+  <div class="sec-tag" style="color:var(--pul)">Who It's For</div>
+  <h2 class="sec-h">Built for people who<br/>can't afford to hesitate.</h2>
+  <div class="cases-grid">
+    <div class="case-card"><div class="case-icon">🎤</div><div class="case-title">Public Speakers</div><div class="case-desc">Flawless delivery without ever glancing at notes.</div></div>
+    <div class="case-card"><div class="case-icon">⚖</div><div class="case-title">Debaters</div><div class="case-desc">Real-time rebuttals and live data — always three steps ahead.</div></div>
+    <div class="case-card"><div class="case-icon">🎙</div><div class="case-title">Journalists</div><div class="case-desc">Live fact-check answers and surface follow-up angles instantly.</div></div>
+    <div class="case-card"><div class="case-icon">🏍</div><div class="case-title">Sales Pros</div><div class="case-desc">Live specs, valuations, and objection handling on any unit.</div></div>
+    <div class="case-card"><div class="case-icon">🛡</div><div class="case-title">Adjusters</div><div class="case-desc">Spot issues, flag recalls, and estimate costs on the spot.</div></div>
+    <div class="case-card"><div class="case-icon">🎓</div><div class="case-title">Researchers</div><div class="case-desc">Write first, source later — citations built as you go.</div></div>
+    <div class="case-card"><div class="case-icon">👗</div><div class="case-title">Retail Staff</div><div class="case-desc">Style suggestions and live inventory, never leaving the floor.</div></div>
+    <div class="case-card"><div class="case-icon">🏛</div><div class="case-title">Politicians</div><div class="case-desc">Navigate press and Q&As with composure and accuracy.</div></div>
+  </div>
+</section>
+<hr class="divider"/>
+
+<!-- SPECS -->
+<section class="sec" id="specs">
+  <div class="sec-tag" style="color:var(--pul)">Tech Specs</div>
+  <h2 class="sec-h">Engineered for the real world.</h2>
+  <p class="sec-sub">Lightweight enough to forget you're wearing them. Powerful enough to change how you think on your feet.</p>
+  <div class="specs-layout">
+    <div>
+      <div class="spec-group"><div class="spec-group-title">Display</div>
+        <div class="spec-row"><span class="spec-key">Lens type</span><span class="spec-val">Waveguide AR overlay</span></div>
+        <div class="spec-row"><span class="spec-key">Field of view</span><span class="spec-val">32° diagonal per lens</span></div>
+        <div class="spec-row"><span class="spec-key">Brightness</span><span class="spec-val">Up to 2,000 nits</span></div>
+        <div class="spec-row"><span class="spec-key">Dual-eye independent</span><span class="spec-val">Yes <span class="spec-badge">Core feature</span></span></div>
+      </div>
+      <div class="spec-group"><div class="spec-group-title">Interaction</div>
+        <div class="spec-row"><span class="spec-key">Eye tracking</span><span class="spec-val">IR, &lt;1° accuracy</span></div>
+        <div class="spec-row"><span class="spec-key">Dwell selection</span><span class="spec-val">0.8s adjustable</span></div>
+        <div class="spec-row"><span class="spec-key">Blink detection</span><span class="spec-val">Intentional blink only</span></div>
+        <div class="spec-row"><span class="spec-key">Wireless remote</span><span class="spec-val">Bluetooth 5.3</span></div>
+      </div>
+      <div class="spec-group"><div class="spec-group-title">Audio</div>
+        <div class="spec-row"><span class="spec-key">Microphones</span><span class="spec-val">4-mic beamforming array</span></div>
+        <div class="spec-row"><span class="spec-key">Audio output</span><span class="spec-val">Bone conduction</span></div>
+        <div class="spec-row"><span class="spec-key">Noise isolation</span><span class="spec-val">Active, 20dB</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="spec-group"><div class="spec-group-title">AI & Connectivity</div>
+        <div class="spec-row"><span class="spec-key">AI model</span><span class="spec-val">Claude (Anthropic)</span></div>
+        <div class="spec-row"><span class="spec-key">Web & archive search</span><span class="spec-val">Live, real-time</span></div>
+        <div class="spec-row"><span class="spec-key">Scholar databases</span><span class="spec-val">JSTOR, arXiv, PubMed</span></div>
+        <div class="spec-row"><span class="spec-key">Field data sources</span><span class="spec-val">VIN, KBB, NHTSA, POS</span></div>
+        <div class="spec-row"><span class="spec-key">Connectivity</span><span class="spec-val">Wi-Fi 6 / BT 5.3</span></div>
+      </div>
+      <div class="spec-group"><div class="spec-group-title">Physical</div>
+        <div class="spec-row"><span class="spec-key">Weight</span><span class="spec-val">38g</span></div>
+        <div class="spec-row"><span class="spec-key">Frame material</span><span class="spec-val">Titanium alloy</span></div>
+        <div class="spec-row"><span class="spec-key">Battery life</span><span class="spec-val">Up to 8 hours</span></div>
+        <div class="spec-row"><span class="spec-key">IP rating</span><span class="spec-val">IPX4 splash resistant</span></div>
+      </div>
+      <div class="spec-group"><div class="spec-group-title">Accessibility</div>
+        <div class="spec-row"><span class="spec-key">Single-eye mode</span><span class="spec-val">Full feature support</span></div>
+        <div class="spec-row"><span class="spec-key">Prescription compatible</span><span class="spec-val">Yes, via insert</span></div>
+        <div class="spec-row"><span class="spec-key">Remote-only mode</span><span class="spec-val">No eye tracking req.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="divider"/>
+
+<!-- PRICING -->
+<section class="sec" id="pricing">
+  <div class="sec-tag" style="color:var(--pul)">Pricing</div>
+  <h2 class="sec-h">Simple, transparent tiers.</h2>
+  <p class="sec-sub">All tiers include hardware. AI features are subscription-based. Waitlist members lock in founding pricing.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-tier">Personal</div>
+      <div class="price-amt">$49<span>/mo</span></div>
+      <div class="price-note">+ $299 hardware (one-time)</div>
+      <ul class="price-features">
+        <li>Smart teleprompter</li>
+        <li>Voice-matched scrolling</li>
+        <li>AI response suggestions</li>
+        <li>Reading mode</li>
+        <li>Wireless remote included</li>
+        <li class="muted">Scholar Mode</li>
+        <li class="muted">Field Mode</li>
+        <li class="muted">Team features</li>
+      </ul>
+      <button class="price-btn" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+    </div>
+    <div class="price-card featured">
+      <div class="price-tier">Professional</div>
+      <div class="price-amt">$99<span>/mo</span></div>
+      <div class="price-note">+ $299 hardware (one-time)</div>
+      <ul class="price-features">
+        <li>Everything in Personal</li>
+        <li>Debate & Q&A mode</li>
+        <li>Scholar Mode (all formats)</li>
+        <li>Field Mode (1 vertical)</li>
+        <li>Live web & archive search</li>
+        <li>Script library (unlimited)</li>
+        <li class="muted">Team script sharing</li>
+        <li class="muted">API / SDK access</li>
+      </ul>
+      <button class="price-btn" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+    </div>
+    <div class="price-card">
+      <div class="price-tier">Enterprise</div>
+      <div class="price-amt" style="font-size:28px">Custom</div>
+      <div class="price-note">Volume hardware pricing</div>
+      <ul class="price-features">
+        <li>Everything in Professional</li>
+        <li>All Field Mode verticals</li>
+        <li>POS / inventory integration</li>
+        <li>Team script sharing</li>
+        <li>Admin dashboard & SSO</li>
+        <li>Dedicated AI instance</li>
+        <li>API & SDK access</li>
+        <li>SLA & priority support</li>
+      </ul>
+      <button class="price-btn" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Contact Sales</button>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:13px;color:#4a5270;margin-top:18px;">All prices are indicative. Waitlist members receive founding member pricing locked at signup.</p>
+</section>
+<hr class="divider"/>
+
+<!-- TEAM -->
+<section class="sec" id="team">
+  <div class="sec-tag" style="color:var(--pul)">The Team</div>
+  <h2 class="sec-h">Built by people who've<br/>stood at the podium.</h2>
+  <div class="team-grid">
+    <div class="team-card"><div class="team-avatar" style="background:rgba(124,58,237,0.1)">👤</div><div class="team-name">Walley</div><div class="team-role">CEO & Co-Founder</div><div class="team-bio">Visionary behind InSight. Background in sales, communication, and human performance — the real-world experience that shaped every feature.</div></div>
+    <div class="team-card"><div class="team-avatar" style="background:rgba(6,182,212,0.08)">👤</div><div class="team-name">Emily Towns</div><div class="team-role">Co-Founder</div><div class="team-bio">Co-Founder and key strategic partner in building InSight from concept to launch.</div></div>
+    <div class="team-card"><div class="team-avatar" style="background:rgba(34,197,94,0.08)">🤝</div><div class="team-name">Advisors & Partners</div><div class="team-role">Hardware · AI · Design</div><div class="team-bio">InSight is actively seeking advisors and technical partners in AR optics, on-device AI, and UX. Interested? Reach out below.</div></div>
+    <div class="team-card"><div class="team-avatar" style="background:rgba(245,158,11,0.08)">💼</div><div class="team-name">Join the Team</div><div class="team-role">Open Roles</div><div class="team-bio">We're building something that doesn't exist yet. If you work in AR hardware, AI inference, or interaction design — we'd love to talk.</div></div>
+  </div>
+</section>
+<hr class="divider"/>
+
+<!-- FAQ -->
+<section class="sec" id="faq">
+  <div class="sec-tag" style="color:var(--pul)">FAQ</div>
+  <h2 class="sec-h">Questions we get asked.</h2>
+  <div class="faq-list" id="faq-list"></div>
+</section>
+<hr class="divider"/>
+
+<!-- CTA -->
+<section class="cta-sec" id="waitlist">
+  <div class="cta-bg"></div>
+  <div class="badge" style="margin-bottom:22px"><span class="badge-dot"></span>Limited Founding Member Spots</div>
+  <h2 class="cta-h">Be first to see the world<br/><span style="background:linear-gradient(135deg,var(--pul),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">differently.</span></h2>
+  <p class="cta-sub">Join the InSight waitlist and lock in founding member pricing. We'll be in touch as we move from concept to prototype.</p>
+  <div class="waitlist">
+    <input type="email" id="email-in" placeholder="Enter your email"/>
+    <button onclick="handleWait()">Request Access</button>
+  </div>
+  <p style="font-size:12px;color:#333" id="wait-msg">No spam. Founding member pricing locked at signup.</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">InSight</div>
+    <div style="font-size:12px;color:#333;margin-top:6px;">See More. Know More. Say More.</div>
+    <div style="margin-top:12px;font-size:11px;color:#222;">© 2026 InSight Technologies, Inc.<br/>Early Concept Stage</div>
+  </div>
+  <div>
+    <div class="footer-col-title">Product</div>
+    <ul class="footer-links">
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#modes">Features</a></li>
+      <li><a href="#scholar">Scholar Mode</a></li>
+      <li><a href="#field">Field Mode</a></li>
+      <li><a href="#specs">Tech Specs</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="footer-col-title">Company</div>
+    <ul class="footer-links">
+      <li><a href="#team">Team</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#waitlist">Join Waitlist</a></li>
+      <li><a href="mailto:hello@insightglasses.ai">hello@insightglasses.ai</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span class="footer-bottom-txt">© 2026 InSight Technologies, Inc. All rights reserved. Specifications are indicative and subject to change.</span>
+  <span class="footer-bottom-txt">Privacy · Terms</span>
+</div>
+
+<script>
+const FAQS=[
+  {q:"Can people tell I'm using InSight?",a:"No. InSight looks like a pair of premium eyeglasses. The display is only visible to the wearer — there's no outward glow, screen, or indicator. The wireless remote is indistinguishable from a standard presentation clicker."},
+  {q:"How does Scholar Mode handle citations?",a:"When you clip a quote by looking at it and saying 'clip that,' InSight automatically captures the full citation metadata — author, title, publisher, page number, date, and URL if applicable. Citations are formatted in your chosen style (MLA, APA, Chicago, or Bluebook) and synced to your companion app in real time."},
+  {q:"Can Field Mode connect to our dealership or store systems?",a:"Yes. Enterprise and Professional tiers support integration with POS systems, inventory platforms, and automotive data sources including VIN lookup, KBB valuation, and NHTSA recall databases. Custom integrations are available under the Enterprise tier."},
+  {q:"How accurate is the voice-matched teleprompter?",a:"InSight uses speech recognition with fuzzy word-matching to track your position in the script. If you go off-script, it holds your last matched word highlighted in amber and resumes automatically when you return."},
+  {q:"Does it work with prescription lenses?",a:"Yes. InSight supports prescription inserts. Single-eye mode is also fully supported for users with vision in only one eye, with all core features available on a single lens."},
+  {q:"What happens if I lose internet connectivity?",a:"Your pre-loaded script and speaker notes are cached locally. The teleprompter and manual navigation work offline. AI suggestions and live search require connectivity, but the core prompter is always available."},
+  {q:"Is the AI always listening?",a:"No. InSight only processes audio when you explicitly activate live listening mode — via the remote's record button or a voice trigger. Microphones are not transmitting at any other time."},
+  {q:"When will InSight be available?",a:"InSight is in early concept and prototype development. Waitlist members will be first to receive updates and beta access. We're targeting a limited beta in late 2027."}
+];
+const fl=document.getElementById('faq-list');
+FAQS.forEach((f,i)=>{
+  const d=document.createElement('div');d.className='faq-item';
+  d.innerHTML=`<div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>${f.q}</span><span class="faq-arrow">▼</span></div><div class="faq-a"><div class="faq-a-inner">${f.a}</div></div>`;
+  fl.appendChild(d);
+});
+
+function handleWait(){
+  const v=document.getElementById('email-in').value;
+  const m=document.getElementById('wait-msg');
+  if(!v||!v.includes('@')){m.style.color='#ef4444';m.textContent='Please enter a valid email.';return;}
+  m.style.color='#22c55e';m.textContent='✓ You\'re on the list! Founding member pricing locked.';
+  document.getElementById('email-in').value='';document.getElementById('email-in').disabled=true;
+}
+
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}}),{threshold:0.07});
+document.querySelectorAll('.feat-card,.case-card,.team-card,.step,.price-card,.mode-feat').forEach(el=>{
+  el.style.opacity='0';el.style.transform='translateY(16px)';el.style.transition='opacity .5s ease, transform .5s ease';
+  obs.observe(el);
+});
+</script>
+</body>
+</html>

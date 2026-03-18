@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<!-- Save as: unified-demo/index.html -->
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InSight System Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --purple:#7c3aed;--purple-l:#a78bfa;--cyan:#06b6d4;
+  --green:#22c55e;--amber:#f59e0b;--red:#ef4444;
+  --bg:#07070f;--s1:rgba(255,255,255,0.04);--b1:rgba(255,255,255,0.08);
+}
+body{background:var(--bg);color:#e8e8f0;font-family:'Inter',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.topbar{background:rgba(0,0,0,0.6);border-bottom:1px solid var(--b1);padding:10px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.logo{font-size:16px;font-weight:800;background:linear-gradient(135deg,#fff,var(--purple-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.topbar-badge{font-size:10px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);color:var(--purple-l);border-radius:100px;padding:2px 10px;letter-spacing:1px;text-transform:uppercase;}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+.live-label{font-size:11px;color:#666;letter-spacing:1px;text-transform:uppercase;}
+
+/* MAIN LAYOUT */
+.main{flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;}
+
+/* ===== LEFT: HUD PANEL ===== */
+.hud-panel{border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.panel-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:#333;padding:8px 16px;border-bottom:1px solid var(--b1);background:rgba(0,0,0,0.3);}
+.hud-view{flex:1;position:relative;overflow:hidden;background:linear-gradient(160deg,#0a1020,#060810);}
+
+/* room bg */
+.room-bg{position:absolute;inset:0;}
+.room-light{position:absolute;top:0;left:50%;transform:translateX(-50%);width:70%;height:50%;background:radial-gradient(ellipse at 50% 0%,rgba(80,110,200,0.06),transparent 70%);}
+.audience-row{position:absolute;bottom:0;left:0;right:0;height:38%;display:flex;align-items:flex-end;justify-content:center;gap:18px;padding-bottom:8px;}
+.person{display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0.28;}
+.p-head{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.2);}
+.p-body{width:26px;height:24px;background:rgba(255,255,255,0.1);border-radius:3px 3px 0 0;}
+
+/* HUD overlay */
+.hud-overlay{position:absolute;inset:0;pointer-events:none;}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 80% 75% at 50% 50%,transparent 50%,rgba(0,4,14,0.7) 100%);}
+.scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(100,140,255,0.1),transparent);animation:scandown 10s linear infinite;}
+.hud-corner{position:absolute;width:14px;height:14px;border-color:rgba(100,150,255,0.3);border-style:solid;}
+.hud-corner.tl{top:10px;left:10px;border-width:1px 0 0 1px;}
+.hud-corner.tr{top:10px;right:10px;border-width:1px 1px 0 0;}
+.hud-corner.bl{bottom:10px;left:10px;border-width:0 0 1px 1px;}
+.hud-corner.br{bottom:10px;right:10px;border-width:0 1px 1px 0;}
+
+/* status */
+.hud-status{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:3px 12px;display:flex;align-items:center;gap:10px;white-space:nowrap;backdrop-filter:blur(8px);}
+.hs-item{display:flex;align-items:center;gap:4px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);}
+.hs-dot{width:4px;height:4px;border-radius:50%;}
+
+/* prompter text */
+.hud-prompter{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;text-align:center;}
+.hud-prompter-text{font-size:clamp(10px,1.6vw,15px);line-height:1.9;font-weight:400;}
+.w-done{color:rgba(255,255,255,0.18);}
+.w-cur{color:#fff;font-weight:600;background:rgba(100,140,255,0.22);border-radius:3px;padding:0 4px;}
+.w-next{color:rgba(255,255,255,0.65);}
+.w-off{color:var(--amber);font-weight:600;background:rgba(245,158,11,0.15);border-radius:3px;padding:0 4px;text-decoration:underline;text-underline-offset:2px;}
+.hud-progress{height:1px;background:rgba(255,255,255,0.06);border-radius:1px;margin-top:10px;}
+.hud-prog-fill{height:100%;background:linear-gradient(90deg,rgba(100,140,255,0.5),rgba(6,182,212,0.5));border-radius:1px;transition:width .4s;}
+
+/* ai bubble */
+.hud-ai{position:absolute;bottom:clamp(28px,6%,50px);left:50%;transform:translateX(-50%);width:86%;background:rgba(0,6,20,0.75);border:1px solid rgba(6,182,212,0.22);border-radius:10px;padding:10px 12px;backdrop-filter:blur(12px);transition:opacity .4s,transform .4s;}
+.hud-ai.hide{opacity:0;transform:translateX(-50%) translateY(8px);}
+.hud-ai-hdr{display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.ai-ping{width:4px;height:4px;border-radius:50%;background:var(--cyan);animation:pulse 1.5s infinite;}
+.hud-ai-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(6,182,212,0.65);}
+.hud-ai-body{font-size:clamp(9px,1.2vw,11px);color:rgba(200,220,255,0.8);line-height:1.65;}
+.ai-tag{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:2px;}
+.t-s{color:rgba(100,200,100,0.7);}
+.t-f{color:rgba(100,180,255,0.7);}
+.t-c{color:rgba(255,160,80,0.7);}
+.ai-sec{margin-bottom:5px;}
+.ai-sec:last-child{margin-bottom:0;}
+
+/* ===== RIGHT: COMPANION APP ===== */
+.app-panel{display:flex;flex-direction:column;overflow:hidden;}
+.app-tabs{display:flex;border-bottom:1px solid var(--b1);background:rgba(0,0,0,0.3);flex-shrink:0;}
+.tab{padding:8px 16px;font-size:12px;font-weight:500;color:#555;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.tab.active{color:var(--purple-l);border-bottom-color:var(--purple-l);}
+.tab-content{flex:1;overflow-y:auto;display:none;flex-direction:column;}
+.tab-content.active{display:flex;}
+
+/* Script tab */
+.script-area{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.script-box{flex:1;background:rgba(255,255,255,0.03);border:1px solid var(--b1);border-radius:8px;color:#ccc;font-size:13px;padding:12px;resize:none;outline:none;font-family:inherit;line-height:1.8;min-height:120px;}
+.script-box:focus{border-color:rgba(124,58,237,0.4);}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.btn{background:rgba(255,255,255,0.05);border:1px solid var(--b1);color:#ccc;border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap;}
+.btn:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.btn.primary{background:rgba(124,58,237,0.2);border-color:rgba(124,58,237,0.4);color:var(--purple-l);}
+.btn.danger{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:var(--red);}
+.slider-row{display:flex;align-items:center;gap:8px;font-size:11px;color:#666;}
+input[type=range]{accent-color:var(--purple-l);flex:1;}
+
+/* Transcript tab */
+.transcript-area{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;}
+.live-transcript{flex:1;background:rgba(255,255,255,0.02);border:1px solid var(--b1);border-radius:8px;padding:12px;font-size:12px;color:#888;line-height:1.8;overflow-y:auto;min-height:80px;}
+.listen-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.listen-btn{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.listen-btn.stop{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:var(--red);}
+.notes-box{background:rgba(255,255,255,0.03);border:1px solid var(--b1);border-radius:8px;color:#ccc;font-size:11px;padding:8px;resize:none;outline:none;font-family:inherit;line-height:1.6;height:62px;}
+.notes-box:focus{border-color:rgba(6,182,212,0.3);}
+
+/* AI tab */
+.ai-area{flex:1;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+.ai-card{background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.18);border-radius:10px;padding:12px;}
+.ai-card-hdr{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#555;margin-bottom:6px;}
+.ai-card-body{font-size:12px;color:#bbb;line-height:1.7;white-space:pre-wrap;}
+.ai-loading{text-align:center;color:#444;font-size:12px;padding:30px;font-style:italic;}
+.ai-simulate-bar{padding:10px 14px;border-top:1px solid var(--b1);display:flex;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,0.2);flex-shrink:0;}
+
+/* BOTTOM STATUS */
+.bottombar{border-top:1px solid var(--b1);padding:7px 16px;display:flex;gap:16px;align-items:center;background:rgba(0,0,0,0.4);flex-shrink:0;}
+.bs-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#444;letter-spacing:.5px;}
+.bs-dot{width:5px;height:5px;border-radius:50%;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes scandown{0%{top:-1px;}100%{top:101%;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">InSight</div>
+  <div class="topbar-badge">System Demo</div>
+  <div class="topbar-right">
+    <div class="live-dot"></div>
+    <div class="live-label">Live</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- LEFT: HUD -->
+  <div class="hud-panel">
+    <div class="panel-label">👁 Lens view — what the wearer sees</div>
+    <div class="hud-view">
+      <!-- Room -->
+      <div class="room-bg">
+        <div class="room-light"></div>
+        <div class="audience-row" id="aud"></div>
+      </div>
+      <!-- Overlay -->
+      <div class="hud-overlay">
+        <div class="vignette"></div>
+        <div class="scan"></div>
+        <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+        <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+        <!-- Status -->
+        <div class="hud-status">
+          <div class="hs-item"><div class="hs-dot" style="background:var(--green);box-shadow:0 0 5px var(--green)"></div>LIVE</div>
+          <div class="hs-item" id="hud-mode-dot"><div class="hs-dot" style="background:var(--amber)"></div><span id="hud-mode-lbl">PROMPTER</span></div>
+        </div>
+        <!-- Prompter -->
+        <div class="hud-prompter" id="hud-prompter">
+          <div class="hud-prompter-text" id="hud-text"></div>
+          <div class="hud-progress"><div class="hud-prog-fill" id="hud-prog"></div></div>
+        </div>
+        <!-- AI bubble -->
+        <div class="hud-ai hide" id="hud-ai">
+          <div class="hud-ai-hdr"><div class="ai-ping"></div><div class="hud-ai-lbl">InSight AI · Q detected</div></div>
+          <div class="hud-ai-body" id="hud-ai-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: COMPANION APP -->
+  <div class="app-panel">
+    <div class="panel-label">📱 Companion app — operator view</div>
+    <div class="app-tabs">
+      <div class="tab active" onclick="switchTab('script')">📜 Script</div>
+      <div class="tab" onclick="switchTab('transcript')">🎙 Listen</div>
+      <div class="tab" onclick="switchTab('ai')">🤖 AI Assist</div>
+    </div>
+
+    <!-- SCRIPT TAB -->
+    <div class="tab-content active" id="tab-script">
+      <div class="script-area">
+        <textarea class="script-box" id="script-input" placeholder="Paste your script here…"></textarea>
+        <div class="slider-row">
+          <span>Speed</span>
+          <input type="range" min="200" max="900" value="400" id="speed-slider" oninput="updateSpeed(this.value)"/>
+          <span id="speed-label">Normal</span>
+        </div>
+        <div class="row">
+          <button class="btn primary" onclick="loadScript()">▶ Load to HUD</button>
+          <button class="btn" onclick="toggleAuto()" id="auto-btn">⏸ Pause</button>
+          <button class="btn" onclick="nudge(-1)">◀ Back</button>
+          <button class="btn" onclick="nudge(1)">▶ Fwd</button>
+          <button class="btn danger" onclick="resetAll()">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSCRIPT TAB -->
+    <div class="tab-content" id="tab-transcript">
+      <div class="transcript-area">
+        <div class="live-transcript" id="transcript-box">Listening will appear here…</div>
+        <div class="listen-controls">
+          <button class="listen-btn" id="listen-btn" onclick="toggleListen()">🎙 Start Listening</button>
+          <button class="btn" onclick="simulateQ()">Simulate question</button>
+          <button class="btn" onclick="simulateOff()">Simulate off-script</button>
+        </div>
+        <textarea class="notes-box" id="notes-input" placeholder="Speaker notes — key facts, context for AI…"></textarea>
+      </div>
+    </div>
+
+    <!-- AI TAB -->
+    <div class="tab-content" id="tab-ai">
+      <div class="ai-area" id="ai-area">
+        <div class="ai-loading" id="ai-placeholder">AI suggestions appear here as you speak or simulate questions.</div>
+      </div>
+      <div class="ai-simulate-bar">
+        <span style="font-size:11px;color:#444;align-self:center">Quick simulate:</span>
+        <button class="btn" onclick="fireAI(0)">Q: AI regulation</button>
+        <button class="btn" onclick="fireAI(1)">Q: Economic impact</button>
+        <button class="btn" onclick="fireAI(2)">Q: Open source</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="bottombar">
+  <div class="bs-item"><div class="bs-dot" style="background:var(--green)"></div>HUD connected</div>
+  <div class="bs-item"><div class="bs-dot" id="mic-dot" style="background:#333"></div><span id="mic-label">Mic off</span></div>
+  <div class="bs-item"><div class="bs-dot" style="background:var(--purple-l)"></div>AI ready</div>
+  <div style="margin-left:auto;font-size:10px;color:#333" id="clock2"></div>
+</div>
+
+<script>
+const DEFAULT = "Good evening everyone. Thank you for joining us tonight for what promises to be a fascinating discussion on the future of artificial intelligence and its impact on society. We stand at a remarkable inflection point in human history. The tools we are building today will shape economies and daily life for generations to come. It is our responsibility to ensure this technology serves humanity broadly, not just a privileged few. I look forward to your questions and your perspectives. The best ideas emerge from disagreement, and I welcome the debate.";
+
+// audience
+const aud = document.getElementById('aud');
+for(let i=0;i<8;i++){const p=document.createElement('div');p.className='person';p.style.opacity=(0.15+Math.random()*.25).toFixed(2);p.style.transform=`scale(${.65+Math.random()*.45})`;p.innerHTML='<div class="p-head"></div><div class="p-body"></div>';aud.appendChild(p);}
+
+// clock
+setInterval(()=>{document.getElementById('clock2').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});},1000);
+
+// script state
+let WORDS=[];let cur=0;let autoOn=true;let autoTimer=null;let offScript=false;let speed=400;
+
+document.getElementById('script-input').value=DEFAULT;
+loadScript();
+
+function loadScript(){
+  const txt=document.getElementById('script-input').value||DEFAULT;
+  WORDS=txt.split(/\s+/).filter(Boolean);
+  cur=0;offScript=false;
+  renderHUD();startAuto();
+}
+
+function renderHUD(){
+  const vis=16,start=Math.max(0,cur-3),end=Math.min(WORDS.length,start+vis);
+  let h='';
+  if(start>0)h+='<span class="w-done">… </span>';
+  for(let i=start;i<end;i++){
+    if(i<cur)h+=`<span class="w-done">${WORDS[i]} </span>`;
+    else if(i===cur)h+=`<span class="${offScript?'w-off':'w-cur'}">${WORDS[i]} </span>`;
+    else h+=`<span class="w-next">${WORDS[i]} </span>`;
+  }
+  document.getElementById('hud-text').innerHTML=h;
+  document.getElementById('hud-prog').style.width=((cur/Math.max(1,WORDS.length))*100)+'%';
+}
+
+function startAuto(){clearInterval(autoTimer);if(autoOn)autoTimer=setInterval(()=>{if(!offScript&&cur<WORDS.length-1){cur++;renderHUD();}},speed);}
+function stopAuto(){clearInterval(autoTimer);}
+function toggleAuto(){autoOn=!autoOn;document.getElementById('auto-btn').textContent=autoOn?'⏸ Pause':'▶ Resume';autoOn?startAuto():stopAuto();}
+function nudge(d){cur=Math.max(0,Math.min(WORDS.length-1,cur+d));renderHUD();}
+function resetAll(){stopAuto();cur=0;offScript=false;autoOn=true;document.getElementById('auto-btn').textContent='⏸ Pause';renderHUD();startAuto();hideAI();}
+function updateSpeed(v){speed=parseInt(v);const labels={200:'Very fast',300:'Fast',400:'Normal',600:'Slow',900:'Very slow'};const closest=Object.keys(labels).reduce((a,b)=>Math.abs(b-v)<Math.abs(a-v)?b:a);document.getElementById('speed-label').textContent=labels[closest]||'Custom';startAuto();}
+
+// tabs
+function switchTab(t){document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['script','transcript','ai'][i]===t));document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');}
+
+// listen
+let recognition=null;let listening=false;let fullTranscript='';
+function toggleListen(){listening?stopListen():startListen();}
+function startListen(){
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){alert('Use Chrome for speech recognition.');return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();recognition.continuous=true;recognition.interimResults=true;recognition.lang='en-US';
+  recognition.onresult=e=>{
+    let fin='';
+    for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fin+=e.results[i][0].transcript+' ';}
+    if(fin){fullTranscript+=fin;document.getElementById('transcript-box').textContent=fullTranscript.slice(-400);matchScript(fin);queueAI(fullTranscript);}
+  };
+  recognition.onerror=()=>stopListen();
+  recognition.onend=()=>{if(listening)recognition.start();};
+  recognition.start();listening=true;
+  document.getElementById('listen-btn').textContent='⏹ Stop Listening';
+  document.getElementById('listen-btn').className='listen-btn stop';
+  document.getElementById('mic-dot').style.background='var(--red)';
+  document.getElementById('mic-dot').style.boxShadow='0 0 6px var(--red)';
+  document.getElementById('mic-label').textContent='Mic live';
+}
+function stopListen(){recognition?.stop();listening=false;document.getElementById('listen-btn').textContent='🎙 Start Listening';document.getElementById('listen-btn').className='listen-btn';document.getElementById('mic-dot').style.background='#333';document.getElementById('mic-dot').style.boxShadow='';document.getElementById('mic-label').textContent='Mic off';}
+
+function matchScript(text){
+  const sw=text.trim().split(/\s+/).filter(Boolean);
+  const strip=s=>s.replace(/[^a-z0-9]/g,'').toLowerCase();
+  let idx=cur,matched=false;
+  for(const w of sw){for(let i=idx;i<Math.min(idx+12,WORDS.length);i++){if(strip(WORDS[i])===strip(w)){idx=i+1;matched=true;break;}}}
+  if(matched){cur=idx;offScript=false;renderHUD();}
+  else{offScript=true;renderHUD();setTimeout(()=>{offScript=false;renderHUD();},3000);}
+}
+
+function simulateQ(){
+  const qs=["What do you think about the risks of unregulated AI?","How will this affect employment?","Can open-source AI be safe?"];
+  const q=qs[Math.floor(Math.random()*qs.length)];
+  fullTranscript+='\n[Q] '+q+' ';
+  document.getElementById('transcript-box').textContent=fullTranscript.slice(-400);
+  queueAI(fullTranscript);
+}
+function simulateOff(){offScript=true;renderHUD();setTimeout(()=>{offScript=false;renderHUD();},3500);}
+
+// AI
+const AI_DATA=[
+  {s:"AI governance is a legislative priority in 47+ nations. The EU AI Act sets the global benchmark with tiered risk classification.",f:"The EU AI Act (2024) is the world's first comprehensive AI law — fines reach 3% of global annual revenue.",c:"Anticipate: 'Regulation stifles innovation' → Counter: GDPR created trust frameworks; privacy-respecting companies saw higher user adoption."},
+  {s:"AI is projected to add $15.7 trillion to the global economy by 2030, but gains are unevenly distributed.",f:"McKinsey (2024): Generative AI could automate 30% of US work hours by 2030 — highest impact in data processing roles.",c:"Anticipate: 'Job losses' → Counter: Historical automation created more jobs than it eliminated; the key is retraining investment."},
+  {s:"Open-source AI fosters transparency and equitable access — over 60% of leading models now have open-weight versions.",f:"Meta's Llama 3, Mistral, and Falcon are among the top open-weight models with billions of downloads in 2024.",c:"Anticipate: 'Open source enables misuse' → Counter: Security-through-obscurity has never worked; community auditing is more robust."}
+];
+let aiQueue=[];let aiProc=false;let aiTimeout=null;
+
+function queueAI(text){aiQueue.push(text);if(!aiProc)processAI();}
+async function processAI(){
+  if(aiProc||aiQueue.length===0)return;
+  const latest=aiQueue[aiQueue.length-1];aiQueue=[];aiProc=true;
+  showAILoading();
+  const notes=document.getElementById('notes-input').value;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,tools:[{type:"web_search_20250305",name:"web_search"}],system:`You are an AI assistant in smart glasses. The speaker's notes: ${notes||'none'}. Respond in this EXACT format with plain text only (no markdown):\nSUGGESTED: [1-2 sentence response suggestion]\nFACT: [one current, specific data point]\nCOUNTER: [one anticipated pushback and how to handle it]`,messages:[{role:"user",content:`Live transcript: "${latest.slice(-300)}"\nGive assistance for the latest question.`}]})});
+    const data=await res.json();
+    const text=data.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'No response.';
+    addAICard(text,latest.slice(-80));
+    showHUDAI(text);
+  }catch(e){addAICard('Error connecting to AI.',latest.slice(-80));}
+  aiProc=false;
+  if(aiQueue.length>0)processAI();
+}
+
+function showAILoading(){document.getElementById('ai-placeholder').style.display='block';document.getElementById('ai-placeholder').textContent='AI thinking…';}
+function addAICard(text,ctx){
+  document.getElementById('ai-placeholder').style.display='none';
+  const card=document.createElement('div');card.className='ai-card';
+  const lines=text.split('\n').filter(l=>l.trim());
+  let html=`<div class="ai-card-hdr">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · "${ctx.trim().slice(-50)}…"</div>`;
+  lines.forEach(l=>{
+    if(l.startsWith('SUGGESTED:'))html+=`<div class="ai-sec"><div class="ai-tag t-s">▶ Response</div>${l.replace('SUGGESTED:','').trim()}</div>`;
+    else if(l.startsWith('FACT:'))html+=`<div class="ai-sec"><div class="ai-tag t-f">◆ Fact</div>${l.replace('FACT:','').trim()}</div>`;
+    else if(l.startsWith('COUNTER:'))html+=`<div class="ai-sec"><div class="ai-tag t-c">⚔ Anticipate</div>${l.replace('COUNTER:','').trim()}</div>`;
+    else html+=`<div style="font-size:11px;color:#888;line-height:1.6">${l}</div>`;
+  });
+  card.innerHTML=html;
+  const area=document.getElementById('ai-area');area.insertBefore(card,area.firstChild);
+  if(area.children.length>5)area.removeChild(area.lastChild);
+  switchTab('ai');
+}
+
+function showHUDAI(text){
+  const lines=text.split('\n').filter(l=>l.trim());
+  let html='';
+  lines.forEach(l=>{
+    if(l.startsWith('SUGGESTED:'))html+=`<div class="ai-sec"><div class="ai-tag t-s">▶ Response</div>${l.replace('SUGGESTED:','').trim()}</div>`;
+    else if(l.startsWith('FACT:'))html+=`<div class="ai-sec"><div class="ai-tag t-f">◆ Fact</div>${l.replace('FACT:','').trim()}</div>`;
+    else if(l.startsWith('COUNTER:'))html+=`<div class="ai-sec"><div class="ai-tag t-c">⚔</div>${l.replace('COUNTER:','').trim()}</div>`;
+  });
+  document.getElementById('hud-ai-body').innerHTML=html||text.slice(0,180);
+  document.getElementById('hud-ai').classList.remove('hide');
+  clearTimeout(aiTimeout);aiTimeout=setTimeout(hideAI,10000);
+}
+function hideAI(){document.getElementById('hud-ai').classList.add('hide');}
+
+function fireAI(idx){
+  const d=AI_DATA[idx];
+  const text=`SUGGESTED: ${d.s}\nFACT: ${d.f}\nCOUNTER: ${d.c}`;
+  addAICard(text,'[simulated question]');
+  showHUDAI(text);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')nudge(1);
+  if(e.key==='ArrowLeft')nudge(-1);
+  if(e.key===' '){e.preventDefault();toggleAuto();}
+});
+</script>
+</body>
+</html>

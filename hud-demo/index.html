@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<!-- Save as: hud-demo/index.html -->
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InSight Dual HUD</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#06060f;font-family:'Inter',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* TOPBAR */
+.topbar{background:rgba(0,0,0,0.7);border-bottom:1px solid rgba(255,255,255,0.07);padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.logo{font-size:14px;font-weight:800;background:linear-gradient(135deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.badge{font-size:9px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);color:#a78bfa;border-radius:100px;padding:2px 8px;letter-spacing:1px;text-transform:uppercase;}
+.mode-btns{margin-left:auto;display:flex;gap:6px;}
+.mbt{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#666;border-radius:5px;padding:4px 10px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .2s;}
+.mbt.on{background:rgba(124,58,237,0.2);border-color:rgba(124,58,237,0.4);color:#a78bfa;}
+
+/* DUAL LENS LAYOUT */
+.lenses{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:0;overflow:hidden;}
+.lens{position:relative;overflow:hidden;}
+.lens-label{position:absolute;top:0;left:0;right:0;text-align:center;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.15);padding:5px;z-index:10;border-bottom:1px solid rgba(255,255,255,0.04);}
+
+/* world bg */
+.world{position:absolute;inset:0;background:linear-gradient(160deg,#0a1020 0%,#060810 100%);}
+.room-glow{position:absolute;top:0;left:50%;transform:translateX(-50%);width:80%;height:45%;background:radial-gradient(ellipse at 50% 0%,rgba(70,100,180,0.06),transparent 70%);}
+.aud-row{position:absolute;bottom:0;left:0;right:0;height:36%;display:flex;align-items:flex-end;justify-content:center;gap:14px;padding-bottom:6px;}
+.person{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.ph{border-radius:50%;background:rgba(255,255,255,0.18);}
+.pb{background:rgba(255,255,255,0.09);border-radius:3px 3px 0 0;}
+
+/* lens overlay */
+.overlay{position:absolute;inset:0;pointer-events:none;}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 82% 78% at 50% 50%,transparent 48%,rgba(0,3,12,0.72) 100%);}
+.scanline{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(100,140,255,0.09),transparent);animation:scan 9s linear infinite;}
+.corner{position:absolute;width:12px;height:12px;border-color:rgba(100,150,255,0.28);border-style:solid;}
+.corner.tl{top:8px;left:8px;border-width:1px 0 0 1px;}
+.corner.tr{top:8px;right:8px;border-width:1px 1px 0 0;}
+.corner.bl{bottom:8px;left:8px;border-width:0 0 1px 1px;}
+.corner.br{bottom:8px;right:8px;border-width:0 1px 1px 0;}
+
+/* divider */
+.lens-divider{position:absolute;top:0;bottom:0;left:50%;width:1px;background:rgba(255,255,255,0.06);z-index:20;}
+
+/* ===== LEFT LENS ===== */
+.left-status{position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:3px 10px;display:flex;align-items:center;gap:8px;white-space:nowrap;backdrop-filter:blur(8px);}
+.sdot{width:4px;height:4px;border-radius:50%;}
+.sitem{display:flex;align-items:center;gap:3px;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+
+.prompter-zone{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;text-align:center;}
+.prompter-zone .plabel{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(120,160,255,0.3);margin-bottom:10px;}
+.ptext{font-size:clamp(10px,1.5vw,14px);line-height:1.9;}
+.w-done{color:rgba(255,255,255,0.18);}
+.w-cur{color:#fff;font-weight:600;background:rgba(100,140,255,0.22);border-radius:3px;padding:0 3px;}
+.w-next{color:rgba(255,255,255,0.65);}
+.w-off{color:#f59e0b;font-weight:600;background:rgba(245,158,11,0.13);border-radius:3px;padding:0 3px;text-decoration:underline;text-underline-offset:2px;}
+.prog{height:1px;background:rgba(255,255,255,0.05);border-radius:1px;margin-top:8px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,rgba(100,140,255,0.45),rgba(6,182,212,0.45));border-radius:1px;transition:width .4s;}
+
+/* response loaded onto left */
+.response-line{position:absolute;bottom:18%;left:50%;transform:translateX(-50%);width:86%;background:rgba(0,6,20,0.7);border:1px solid rgba(100,200,130,0.25);border-radius:9px;padding:9px 12px;backdrop-filter:blur(10px);transition:opacity .4s,transform .4s;}
+.response-line.hide{opacity:0;transform:translateX(-50%) translateY(6px);}
+.rl-tag{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(100,200,130,0.6);margin-bottom:4px;}
+.rl-text{font-size:clamp(9px,1.3vw,12px);color:rgba(200,240,210,0.88);line-height:1.6;}
+
+/* point queue ticker */
+.point-queue{position:absolute;bottom:6%;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;}
+.pq-dot{width:7px;height:7px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);transition:all .4s;cursor:pointer;position:relative;}
+.pq-dot.active{background:rgba(6,182,212,0.5);border-color:rgba(6,182,212,0.6);box-shadow:0 0 6px rgba(6,182,212,0.4);}
+.pq-dot.done{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);transform:scale(0.7);}
+.pq-label{font-size:7px;color:rgba(255,255,255,0.2);letter-spacing:1px;text-transform:uppercase;margin-right:4px;}
+
+/* ===== RIGHT LENS ===== */
+.response-menu{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;display:flex;flex-direction:column;gap:5px;}
+.rmenu-label{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(6,182,212,0.45);margin-bottom:4px;text-align:center;}
+.rcard{background:rgba(0,6,20,0.65);border:1px solid rgba(100,150,255,0.15);border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .35s;position:relative;overflow:hidden;}
+.rcard:hover,.rcard.gazing{border-color:rgba(100,150,255,0.5);background:rgba(20,40,100,0.55);}
+.rcard.selected{border-color:rgba(100,200,130,0.5);background:rgba(0,40,20,0.5);}
+.rcard.faded{opacity:0.3;}
+.rcard-num{font-size:8px;color:rgba(6,182,212,0.5);font-weight:600;margin-bottom:3px;letter-spacing:1px;}
+.rcard-text{font-size:clamp(8px,1.2vw,11px);color:rgba(200,220,255,0.8);line-height:1.55;}
+.dwell-bar{position:absolute;bottom:0;left:0;height:2px;background:rgba(100,200,130,0.6);width:0%;transition:width linear;}
+
+/* point list on right */
+.points-panel{position:absolute;bottom:10%;left:50%;transform:translateX(-50%);width:90%;}
+.points-label{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,160,80,0.4);margin-bottom:5px;}
+.point-item{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.point-item:last-child{border-bottom:none;}
+.pi-num{font-size:8px;color:rgba(255,160,80,0.5);font-weight:600;min-width:12px;}
+.pi-text{font-size:clamp(7px,1vw,10px);color:rgba(200,180,160,0.65);line-height:1.5;}
+.point-item.done .pi-text{color:rgba(255,255,255,0.2);text-decoration:line-through;}
+.point-item.active-pt .pi-text{color:rgba(255,200,120,0.9);}
+
+/* right status */
+.right-status{position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:3px 10px;display:flex;align-items:center;gap:8px;white-space:nowrap;backdrop-filter:blur(8px);}
+
+/* CONTROLS */
+.controls{border-top:1px solid rgba(255,255,255,0.06);padding:8px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:rgba(0,0,0,0.5);flex-shrink:0;}
+.ctrl{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border-radius:5px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap;}
+.ctrl:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.ctrl.go{background:rgba(124,58,237,0.2);border-color:rgba(124,58,237,0.4);color:#a78bfa;font-weight:600;}
+.ctrl.red{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#ef4444;}
+.divdr{width:1px;height:16px;background:rgba(255,255,255,0.08);}
+.remote-sim{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:4px 10px;}
+.remote-label{font-size:9px;color:#444;letter-spacing:1px;}
+.rbtn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#777;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit;}
+.rbtn:hover{color:#fff;background:rgba(255,255,255,0.12);}
+
+@keyframes scan{0%{top:0;}100%{top:101%;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes dotExpand{0%{transform:scale(1);}50%{transform:scale(1.6);}100%{transform:scale(1);}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">InSight</div>
+  <div class="badge">Dual-Eye Interaction</div>
+  <div class="mode-btns">
+    <button class="mbt on" id="btn-speak" onclick="setMode('speak')">🎤 Speaking</button>
+    <button class="mbt" id="btn-qa" onclick="setMode('qa')">❓ Q&amp;A</button>
+    <button class="mbt" id="btn-debate" onclick="setMode('debate')">⚔ Debate</button>
+  </div>
+</div>
+
+<div class="lenses">
+
+  <!-- LEFT LENS -->
+  <div class="lens" id="left-lens">
+    <div class="world"><div class="room-glow"></div><div class="aud-row" id="aud-l"></div></div>
+    <div class="overlay">
+      <div class="vignette"></div><div class="scanline"></div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+    </div>
+    <div class="lens-label">left lens — teleprompter + response</div>
+
+    <!-- status -->
+    <div class="left-status">
+      <div class="sitem"><div class="sdot" style="background:#22c55e;box-shadow:0 0 5px #22c55e;animation:pulse 2s infinite"></div>ON SCRIPT</div>
+      <div class="sitem" id="left-mode-lbl"><div class="sdot" style="background:#f59e0b"></div>SPEAKING</div>
+    </div>
+
+    <!-- prompter -->
+    <div class="prompter-zone" id="prompter-zone">
+      <div class="plabel">— teleprompter —</div>
+      <div class="ptext" id="ptext"></div>
+      <div class="prog"><div class="prog-fill" id="prog-fill"></div></div>
+    </div>
+
+    <!-- selected response line -->
+    <div class="response-line hide" id="resp-line">
+      <div class="rl-tag">▶ Selected response — opening line</div>
+      <div class="rl-text" id="resp-text"></div>
+    </div>
+
+    <!-- point queue dots -->
+    <div class="point-queue" id="point-queue">
+      <div class="pq-label">Queue</div>
+    </div>
+  </div>
+
+  <div class="lens-divider"></div>
+
+  <!-- RIGHT LENS -->
+  <div class="lens" id="right-lens">
+    <div class="world"><div class="room-glow"></div><div class="aud-row" id="aud-r"></div></div>
+    <div class="overlay">
+      <div class="vignette"></div><div class="scanline" style="animation-delay:-4s"></div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+    </div>
+    <div class="lens-label">right lens — response selector + point queue</div>
+
+    <!-- status -->
+    <div class="right-status">
+      <div class="sitem"><div class="sdot" style="background:#06b6d4;box-shadow:0 0 5px #06b6d4;animation:pulse 2s infinite"></div>AI ASSIST</div>
+      <div class="sitem" id="right-mode-lbl"><div class="sdot" style="background:#a78bfa"></div><span id="right-mode-txt">READY</span></div>
+    </div>
+
+    <!-- response cards -->
+    <div class="response-menu" id="resp-menu" style="display:none">
+      <div class="rmenu-label" id="rmenu-lbl">— gaze to select · dwell 1s to confirm —</div>
+      <div id="rcards"></div>
+    </div>
+
+    <!-- idle message -->
+    <div id="idle-msg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:rgba(255,255,255,0.15);font-size:11px;line-height:1.8;">
+      Right lens idle<br/><span style="font-size:9px;letter-spacing:1px;text-transform:uppercase">Activate Q&amp;A or Debate mode<br/>or simulate a question</span>
+    </div>
+
+    <!-- points panel -->
+    <div class="points-panel" id="points-panel" style="display:none">
+      <div class="points-label">⚔ Unaddressed points</div>
+      <div id="points-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <div class="remote-sim">
+    <div class="remote-label">🎮 REMOTE</div>
+    <button class="rbtn" onclick="remoteScroll(-1)" title="Scroll up">▲</button>
+    <button class="rbtn" onclick="remoteScroll(1)" title="Scroll down">▼</button>
+    <button class="rbtn" onclick="remoteSelect()" title="Press to select">●</button>
+    <button class="rbtn" onclick="toggleRecord()" id="rec-btn" title="Record">⏺</button>
+  </div>
+  <div class="divdr"></div>
+  <button class="ctrl go" onclick="simulateQuestion()">🎙 Simulate question</button>
+  <button class="ctrl" onclick="simulateMultiPoint()">⚔ Multi-point challenge</button>
+  <button class="ctrl" onclick="markAddressed()">✓ Addressed</button>
+  <button class="ctrl" onclick="nudge(-1)">◀</button>
+  <button class="ctrl" onclick="nudge(1)">▶</button>
+  <button class="ctrl red" onclick="resetAll()">↺ Reset</button>
+</div>
+
+<script>
+const SCRIPT="Good evening everyone. Thank you for joining us tonight for what promises to be a fascinating discussion on the future of artificial intelligence and its impact on society. We stand at a remarkable inflection point in human history. The tools we are building today will shape economies governments and daily life for generations to come. It is our responsibility to ensure this technology serves humanity broadly. I look forward to your questions and your perspectives.";
+const WORDS=SCRIPT.split(/\s+/).filter(Boolean);
+
+// audience
+['aud-l','aud-r'].forEach(id=>{
+  const a=document.getElementById(id);
+  for(let i=0;i<7;i++){const p=document.createElement('div');p.className='person';p.style.opacity=(0.15+Math.random()*.22).toFixed(2);p.style.transform=`scale(${.6+Math.random()*.4})`;p.innerHTML=`<div class="ph" style="width:${14+Math.random()*6}px;height:${14+Math.random()*6}px"></div><div class="pb" style="width:${20+Math.random()*8}px;height:${18+Math.random()*10}px"></div>`;a.appendChild(p);}
+});
+
+let cur=0,autoOn=true,autoTimer=null,mode='speak';
+let responses=[],activeCardIdx=0,points=[],dwellTimer=null,dwellInterval=null;
+let recording=false;
+
+// prompter
+function renderPrompter(){
+  const vis=14,start=Math.max(0,cur-3),end=Math.min(WORDS.length,start+vis);
+  let h='';
+  if(start>0)h+='<span class="w-done">… </span>';
+  for(let i=start;i<end;i++){
+    if(i<cur)h+=`<span class="w-done">${WORDS[i]} </span>`;
+    else if(i===cur)h+=`<span class="w-cur">${WORDS[i]} </span>`;
+    else h+=`<span class="w-next">${WORDS[i]} </span>`;
+  }
+  document.getElementById('ptext').innerHTML=h;
+  document.getElementById('prog-fill').style.width=((cur/WORDS.length)*100)+'%';
+}
+function startAuto(){clearInterval(autoTimer);if(autoOn)autoTimer=setInterval(()=>{if(cur<WORDS.length-1){cur++;renderPrompter();}},420);}
+function stopAuto(){clearInterval(autoTimer);autoTimer=null;}
+function nudge(d){cur=Math.max(0,Math.min(WORDS.length-1,cur+d));renderPrompter();}
+
+// modes
+function setMode(m){
+  mode=m;
+  ['speak','qa','debate'].forEach(x=>{document.getElementById('btn-'+x).classList.toggle('on',x===m);});
+  document.getElementById('left-mode-lbl').lastChild&&(document.getElementById('left-mode-lbl').innerHTML=`<div class="sdot" style="background:#f59e0b"></div>${m.toUpperCase()}`);
+  document.getElementById('right-mode-txt').textContent=m==='speak'?'READY':m==='qa'?'Q LISTEN':'DEBATE';
+  if(m==='speak'){hideResponseMenu();document.getElementById('idle-msg').style.display='block';}
+}
+
+// simulate question
+const Q_DATA=[
+  {q:"How do you address concerns about AI bias in hiring systems?",responses:[
+    {num:1,text:"Bias in AI hiring reflects historical data. The solution is diverse training sets combined with mandatory human review at final decision stages.",full:"Bias in AI hiring is a real and serious concern — one I've spent considerable time on. The root cause is that these systems learn from historical data, which encodes past discrimination. The fix isn't to abandon AI in hiring, but to mandate diverse training sets, regular bias audits, and — critically — human review before any final decision."},
+    {num:2,text:"I'd push back slightly — unchecked human hiring has documented bias too. AI at least allows us to audit the decision process.",full:"I'd gently push back on the framing. Unchecked human hiring has well-documented bias problems that are nearly impossible to audit. The advantage of AI is that we can actually inspect the decision process, run bias metrics, and enforce consistency. The risk isn't AI — it's deploying AI without accountability frameworks."},
+    {num:3,text:"Regulatory frameworks like the EU AI Act now require bias testing before high-risk AI systems like hiring tools can be deployed.",full:"The regulatory response is already underway. The EU AI Act classifies hiring tools as high-risk AI, requiring mandatory bias testing and transparency before deployment. That's the right framework. What we need now is for other jurisdictions to follow suit and for companies to treat compliance as a floor, not a ceiling."}
+  ],points:["Bias in training data","Need for human oversight","Regulatory accountability","Auditing vs black-box systems"]},
+  {q:"Isn't open-source AI just handing dangerous tools to bad actors?",responses:[
+    {num:1,text:"Security through obscurity has never worked in technology. Open models allow the entire research community to identify and patch vulnerabilities.",full:"Security through obscurity has a poor track record across all of technology. When Linux, cryptography standards, and network protocols went open, they became more secure — not less — because thousands of researchers could find and fix flaws. The same logic applies to AI. Open weights mean the entire global research community can audit, red-team, and improve safety."},
+    {num:2,text:"The most dangerous AI capabilities are not in open-source models. They require compute resources and expertise that bad actors rarely have.",full:"It's worth being precise about what open-source AI can actually do. The most dangerous potential applications — truly autonomous systems, large-scale influence operations — require massive compute and deep expertise that remains out of reach for most bad actors. Meanwhile, closed models from large labs arguably concentrate more risk, since a single compromise exposes far more capability."},
+    {num:3,text:"Restricting open-source would simply export AI development to jurisdictions with fewer safety norms. Openness keeps safety research at the frontier.",full:"If we close off open-source AI in democratic societies, we don't eliminate the risk — we export it. Development moves to jurisdictions with fewer safety norms and less accountability. The better strategy is to keep safety research at the frontier, which requires open collaboration between academics, civil society, and industry."}
+  ],points:["Open source enables security auditing","Dangerous capabilities require large compute","Closed models concentrate risk","Export risk to unregulated jurisdictions"]}
+];
+
+let activeQ=null,activePointIdx=0;
+
+function simulateQuestion(){
+  const q=Q_DATA[Math.floor(Math.random()*Q_DATA.length)];
+  activeQ=q;activePointIdx=0;
+  stopAuto();
+  showResponseMenu(q);
+  if(mode==='speak')setMode('qa');
+}
+
+function simulateMultiPoint(){
+  const q=Q_DATA[1];activeQ=q;activePointIdx=0;
+  stopAuto();setMode('debate');
+  showResponseMenu(q);
+  showPointsPanel(q.points);
+}
+
+function showResponseMenu(q){
+  document.getElementById('idle-msg').style.display='none';
+  document.getElementById('resp-menu').style.display='block';
+  const qText=q.q.length>48?q.q.slice(0,48)+'…':q.q;
+  document.getElementById('rmenu-lbl').textContent=`"${qText}"`;
+  const c=document.getElementById('rcards');c.innerHTML='';
+  responses=q.responses;activeCardIdx=0;remoteHighlight=0;
+  q.responses.forEach((r,i)=>{
+    const d=document.createElement('div');
+    d.className='rcard'+(i===0?' gazing':'');
+    d.id='rcard-'+i;
+    d.innerHTML=`<div class="rcard-num">OPTION ${r.num}</div><div class="rcard-text">${r.text}</div><div class="dwell-bar" id="dwell-${i}"></div>`;
+    d.addEventListener('mouseenter',()=>gazeCard(i));
+    d.addEventListener('mouseleave',()=>ungaze(i));
+    d.addEventListener('click',()=>selectCard(i));
+    c.appendChild(d);
+  });
+  setTimeout(()=>startDwell(0),50);
+}
+
+function showPointsPanel(pts){
+  document.getElementById('points-panel').style.display='block';
+  const list=document.getElementById('points-list');list.innerHTML='';
+  points=pts.map((t,i)=>({text:t,done:false,active:i===0}));
+  renderPoints();
+  renderQueueDots();
+}
+
+function renderPoints(){
+  const list=document.getElementById('points-list');list.innerHTML='';
+  points.forEach((p,i)=>{
+    const d=document.createElement('div');
+    d.className='point-item'+(p.done?' done':p.active?' active-pt':'');
+    d.innerHTML=`<div class="pi-num">${p.done?'✓':i+1}</div><div class="pi-text">${p.text}</div>`;
+    list.appendChild(d);
+  });
+}
+
+function renderQueueDots(){
+  const q=document.getElementById('point-queue');
+  const existing=q.querySelectorAll('.pq-dot');
+  existing.forEach(e=>e.remove());
+  points.forEach((p,i)=>{
+    const d=document.createElement('div');
+    d.className='pq-dot'+(p.active?' active':p.done?' done':'');
+    d.title=p.text;
+    d.onclick=()=>activatePoint(i);
+    q.appendChild(d);
+  });
+}
+
+function activatePoint(i){
+  points.forEach((p,j)=>p.active=j===i);
+  renderPoints();renderQueueDots();
+}
+
+function markAddressed(){
+  const idx=points.findIndex(p=>p.active);
+  if(idx===-1)return;
+  points[idx].done=true;points[idx].active=false;
+  const next=points.find(p=>!p.done);
+  if(next)next.active=true;
+  renderPoints();renderQueueDots();
+}
+
+// gaze / dwell
+function gazeCard(i){
+  document.querySelectorAll('.rcard').forEach((c,j)=>c.classList.toggle('gazing',j===i));
+  clearDwell();activeCardIdx=i;startDwell(i);
+}
+function ungaze(i){clearDwell();document.getElementById('dwell-'+i).style.width='0%';}
+function startDwell(i){
+  clearDwell();
+  const bar=document.getElementById('dwell-'+i);
+  if(!bar)return;
+  let pct=0;
+  dwellInterval=setInterval(()=>{
+    pct+=2;bar.style.width=pct+'%';
+    if(pct>=100){clearDwell();selectCard(i);}
+  },20);
+}
+function clearDwell(){clearInterval(dwellInterval);dwellInterval=null;}
+
+function selectCard(i){
+  clearDwell();
+  document.querySelectorAll('.rcard').forEach((c,j)=>{c.classList.remove('gazing');c.classList.toggle('selected',j===i);c.classList.toggle('faded',j!==i);});
+  const r=responses[i];
+  const respWords=r.full.split(/\s+/).filter(Boolean);
+
+  // hide main prompter, show response line as active teleprompter
+  document.getElementById('prompter-zone').style.opacity='0';
+  document.getElementById('prompter-zone').style.pointerEvents='none';
+  document.getElementById('resp-line').classList.remove('hide');
+  document.getElementById('left-mode-lbl').innerHTML=`<div class="sdot" style="background:#22c55e"></div>RESPONSE ACTIVE`;
+
+  // run response words through as live teleprompter
+  let rIdx=0;
+  function renderResp(){
+    const vis=14,start=Math.max(0,rIdx-3),end=Math.min(respWords.length,start+vis);
+    let h='';
+    if(start>0)h+='<span class="w-done">… </span>';
+    for(let k=start;k<end;k++){
+      if(k<rIdx)h+=`<span class="w-done">${respWords[k]} </span>`;
+      else if(k===rIdx)h+=`<span class="w-cur">${respWords[k]} </span>`;
+      else h+=`<span class="w-next">${respWords[k]} </span>`;
+    }
+    document.getElementById('resp-text').innerHTML=h;
+    document.getElementById('prog-fill').style.width=((rIdx/respWords.length)*100)+'%';
+  }
+  renderResp();
+
+  const respTimer=setInterval(()=>{
+    if(rIdx<respWords.length-1){rIdx++;renderResp();}
+    else{
+      clearInterval(respTimer);
+      // swap back to main script after 1.5s
+      setTimeout(()=>{
+        document.getElementById('resp-line').classList.add('hide');
+        document.getElementById('prompter-zone').style.opacity='1';
+        document.getElementById('prompter-zone').style.pointerEvents='';
+        document.getElementById('left-mode-lbl').innerHTML=`<div class="sdot" style="background:#f59e0b"></div>${mode.toUpperCase()}`;
+        renderPrompter();startAuto();
+      },1500);
+    }
+  },420);
+}
+
+function hideResponseMenu(){
+  document.getElementById('resp-menu').style.display='none';
+  document.getElementById('points-panel').style.display='none';
+  document.getElementById('idle-msg').style.display='block';
+  clearDwell();
+}
+
+// remote sim
+let remoteHighlight=0;
+function remoteScroll(dir){
+  if(document.getElementById('resp-menu').style.display!=='none'){
+    clearDwell();
+    document.getElementById('dwell-'+remoteHighlight).style.width='0%';
+    remoteHighlight=Math.max(0,Math.min(responses.length-1,remoteHighlight+dir));
+    gazeCard(remoteHighlight);
+  } else {nudge(dir*3);}
+}
+function remoteSelect(){
+  if(document.getElementById('resp-menu').style.display!=='none')selectCard(remoteHighlight);
+}
+function toggleRecord(){
+  recording=!recording;
+  document.getElementById('rec-btn').style.color=recording?'#ef4444':'';
+  document.getElementById('rec-btn').style.textShadow=recording?'0 0 6px #ef4444':'';
+}
+
+function resetAll(){
+  clearDwell();cur=0;autoOn=true;points=[];responses=[];
+  renderPrompter();hideResponseMenu();
+  document.getElementById('point-queue').querySelectorAll('.pq-dot').forEach(d=>d.remove());
+  document.getElementById('resp-line').classList.add('hide');
+  startAuto();setMode('speak');
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')nudge(1);
+  if(e.key==='ArrowLeft')nudge(-1);
+  if(e.key==='ArrowDown')remoteScroll(1);
+  if(e.key==='ArrowUp')remoteScroll(-1);
+  if(e.key==='Enter')remoteSelect();
+  if(e.key===' '){e.preventDefault();autoOn=!autoOn;autoOn?startAuto():clearInterval(autoTimer);}
+});
+
+renderPrompter();startAuto();
+</script>
+</body>
+</html>
