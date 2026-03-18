@@ -396,25 +396,26 @@ function renderPrompt() {
   document.getElementById('prog-thumb').style.left = pct + '%';
 }
 
-// swipe navigation
+// swipe navigation — restricted to prompter zone only, not speed slider
 function initSwipe() {
-  const zone = document.getElementById('tp-view');
-  let startX = 0, startY = 0, startWi = 0;
+  const zone = document.getElementById('prompter-zone');
+  let startX = 0, startY = 0, startWi = 0, swiping = false;
   zone.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     startWi = wi;
+    swiping = false;
   }, { passive: true });
   zone.addEventListener('touchmove', e => {
     const dx = e.touches[0].clientX - startX;
     const dy = Math.abs(e.touches[0].clientY - startY);
-    if (dy > 30) return; // ignore vertical scroll
-    // each ~8px of swipe = 1 word
+    if (!swiping && dy > Math.abs(dx)) return; // vertical — ignore
+    swiping = true;
     const delta = Math.round(-dx / 8);
     wi = Math.max(0, Math.min(WORDS.length - 1, startWi + delta));
     renderPrompt();
   }, { passive: true });
-  zone.addEventListener('touchend', () => { startWi = wi; }, { passive: true });
+  zone.addEventListener('touchend', () => { startWi = wi; swiping = false; }, { passive: true });
 }
 function startAuto() { clearInterval(autoTimer); if (autoOn) autoTimer = setInterval(() => { if (!offScript && wi < WORDS.length - 1) { wi++; renderPrompt(); } }, speed); }
 function stopAuto() { clearInterval(autoTimer); }
@@ -444,15 +445,21 @@ function startListen() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
   recognition.onresult = e => {
-    let f = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) f += e.results[i][0].transcript + ' '; }
-    if (f) {
-      // flash hearing indicator
+    // use interim results for real-time tracking — don't wait for pause
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript + ' ';
+    }
+    // match on interim first for live tracking, fall back to final
+    const text = interim || final;
+    if (text.trim()) {
       const ind = document.getElementById('mic-ind');
       ind.classList.add('hearing');
-      setTimeout(() => ind.classList.remove('hearing'), 600);
-      matchScript(f); checkWake(f);
+      setTimeout(() => ind.classList.remove('hearing'), 400);
+      matchScript(text);
     }
+    if (final) checkWake(final);
   };
   recognition.onerror = () => stopListen();
   recognition.onend = () => { if (listening) recognition.start(); };
