@@ -463,8 +463,10 @@ function startListen(){
       setTimeout(function(){ if(listening) setMicStatus(true,false); },500);
       var ovOpen=!document.getElementById('resp-ov').classList.contains('hide');
       var qaActive=document.getElementById('qa-view').classList.contains('active');
-      if(ovOpen){ matchRoScript(text); }
-      else if(qaActive){
+      var tpActive=document.getElementById('tp-view').classList.contains('active');
+      if(ovOpen){
+        matchRoScript(text);
+      } else if(qaActive){
         if(final){
           liveTranscript+=final;
           var el=document.getElementById('qa-transcript-txt');
@@ -473,7 +475,9 @@ function startListen(){
           if(em) em.style.display='none';
           scheduleLiveAI();
         }
-      } else { matchScript(text); }
+      } else if(tpActive){
+        matchScript(text);
+      }
     }
     if(final) checkWake(final);
   };
@@ -578,27 +582,37 @@ function checkWake(text){
 function scheduleLiveAI(){
   clearTimeout(liveAITimer);
   liveAITimer=setTimeout(function(){
-    var text=liveTranscript.slice(-400);
-    if(text.trim().length<20||text===lastAIText) return;
-    lastAIText=text; callLiveAI(text);
-  },2000);
-}
-
-function callLiveAI(text){
-  var card=document.getElementById('live-ai-card');
-  var txt=document.getElementById('live-ai-txt');
-  if(!card||!txt) return;
-  card.style.display='block'; txt.textContent='Thinking…';
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,
-      tools:[{type:'web_search_20250305',name:'web_search'}],
-      system:'You are assisting Walley presenting his HISTORY 488 midterm at UMKC. His project uses AI to find underserved business opportunities in Kansas City — Waldo/Brookside and Crossroads/Midtown neighborhoods, focusing on food and retail gaps. InSight is his AI smart glasses platform. Give a concise 2-3 sentence suggested response to the latest question heard. Be direct and presentation-ready.',
-      messages:[{role:'user',content:'Transcript: "'+text+'"\n\nSuggest a concise response for Walley to say right now.'}]})
-  }).then(function(r){return r.json();}).then(function(d){
-    var resp=(d.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join(' ');
-    txt.textContent=resp||'No response generated.';
-  }).catch(function(){txt.textContent='Could not reach AI.';});
+    var text=liveTranscript.slice(-300).toLowerCase();
+    if(text.trim().length<15) return;
+    // smart topic matching based on keywords in transcript
+    var scores=[
+      {i:0, keys:['data','source','where','portal','census','yelp','google','review']},
+      {i:1, keys:['money','revenue','business model','subscription','profit','pay','cost','commercial']},
+      {i:2, keys:['redlin','ethic','bias','discriminat','displac','gentrif','community','historic','fair']},
+      {i:3, keys:['kansas city','waldo','crossroads','midtown','brookside','neighborhood','finding','result']},
+      {i:4, keys:['limitation','bias','wrong','accurate','hallucin','mistake','reliable','ai limit']},
+      {i:5, keys:['why','different','existing','yelp already','google already','better','compet','uniqu']},
+      {i:6, keys:['disclosure','transparent','tool','use','claude','anthropic','how did you']}
+    ];
+    var best=-1, bestScore=0;
+    scores.forEach(function(s){
+      var score=0;
+      s.keys.forEach(function(k){ if(text.indexOf(k)!==-1) score++; });
+      if(score>bestScore){ bestScore=score; best=s.i; }
+    });
+    var card=document.getElementById('live-ai-card');
+    var txt=document.getElementById('live-ai-txt');
+    if(!card||!txt) return;
+    card.style.display='block';
+    if(best>=0 && bestScore>0){
+      var q=QA[best];
+      // show best matching response option
+      var resp=q.responses[0].short;
+      txt.innerHTML='<strong style="color:rgba(167,139,250,0.7);font-size:10px;letter-spacing:1px">MATCHED: '+q.label.toUpperCase()+'</strong><br><br>'+resp+'<br><br><span style="color:rgba(6,182,212,0.7);font-size:11px">◆ '+q.fact+'</span>';
+    } else {
+      txt.textContent='Listening for a recognizable question topic…';
+    }
+  },1500);
 }
 
 function toggleExpand(id){
