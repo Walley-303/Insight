@@ -1,6 +1,8 @@
 # Chat history — never commit personal conversation data
 Chat Data/
 Chat Data.lnk
+docs/chat-history-summary.md
+docs/mrt-development-history.md
 
 # Claude local config
 .claude/
